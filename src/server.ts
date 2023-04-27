@@ -8,8 +8,11 @@ import * as process from "process";
 dotenv.config();
 const app = express();
 app.use(cors());
+
+// @ts-ignore
 app.use(express.json());
 
+// todo: maybe extract this function to a separate file
 async function connectToMongo() {
     console.log('Connecting to MongoDB...');
 try {
@@ -18,6 +21,7 @@ try {
     }
     const connection = await mongoose.connect(process.env.MONGO_URI);
     console.log('MongoDB connected');
+    // todo: add function that creates admin user if it doesn't exist
 } catch (error) {
     console.error('Error connecting to MongoDB:', error);
 }
