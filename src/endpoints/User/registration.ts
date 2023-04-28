@@ -16,6 +16,12 @@ app.post("/user/registration", async (req: Request, res: Response) =>{
     }
     
     //prüfen ob daten korrekt
+    //Email valide
+    const validEmail: RegExp = /^[\w.-]+@[a-zA-Z0-9]+\.[a-zA-Z]{2,}$/i;
+    if(validEmail.test(email) == false){
+        return res.status(400).json({ message: "Invalid Email address" });
+    }
+    //Username unique
     //if( username bereits in datenbank ){
     //  return res.status(400).json({ message: "Username is already taken" });
     //}
