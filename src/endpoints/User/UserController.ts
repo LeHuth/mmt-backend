@@ -17,7 +17,7 @@ const registration = async (req: Request, res: Response) => {
         return res.status(400).json({ message: "Invalid Email address" });
     }
     //Username unique
-    if( await UserModel.findOne({username}) ){
+    if(await UserModel.findOne({username}) ){
        return res.status(400).json({ message: "Username is already taken" });
     }
 
