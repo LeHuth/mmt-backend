@@ -13,6 +13,7 @@
   "author": "leonard huth",
   "license": "ISC",
   "dependencies": {
+    "@google-cloud/storage": "^6.9.5",
     "@types/bcryptjs": "^2.4.2",
     "@types/cors": "^2.8.13",
     "@types/jest": "^29.5.1",
