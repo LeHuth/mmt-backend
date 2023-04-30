@@ -4,11 +4,16 @@ import dotenv from "dotenv";
 import cors from "cors";
 import jwt from "jsonwebtoken";
 import * as process from "process";
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 dotenv.config();
 const app = express();
 app.use(cors());
-
+app.use(express.json({limit: '50mb'}));
 // @ts-ignore
 app.use(express.json());
 
