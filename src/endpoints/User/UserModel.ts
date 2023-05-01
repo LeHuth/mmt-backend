@@ -17,8 +17,8 @@ const userSchema = new Schema<IUser> ({
     username: { type: String, unique: true, required: true },
     email: {type: String, required: true },
     password: {type: String, required: true },
-    isAdmin: {type: Boolean, default: false },
-    isOrganizer: {type: Boolean, default: false },
+    isAdmin: {type: Boolean, required: true, default: false },
+    isOrganizer: {type: Boolean, required: true, default: false },
 })
 
 
