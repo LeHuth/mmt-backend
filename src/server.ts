@@ -12,7 +12,7 @@ app.use(cors());
 app.use(express.json({limit: '50mb'}));
 // @ts-ignore
 app.use(express.json());
-app.use('/event',EventRoutes)
+app.use('/events',EventRoutes)
 // todo: maybe extract this function to a separate file
 async function connectToMongo() {
     console.log('Connecting to MongoDB...');
