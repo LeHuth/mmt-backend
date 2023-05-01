@@ -16,4 +16,7 @@ router.post('/create', eventValidationRules,validateRequest, EventController.cre
 // update event
 router.patch('/update/:id', EventController.update);
 
+// delete event
+router.delete('/delete/:id', EventController.deleteById);
+
 export default router;
