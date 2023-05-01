@@ -6,12 +6,16 @@ const eventValidationRules = [
     body('title')
         .trim()
         .notEmpty()
+        .isLength({min: 5, max: 50})
         .withMessage('Title is required.'),
     body('description')
         .trim()
         .notEmpty()
+        .isLength({min: 5, max: 500})
         .withMessage('Description is required.'),
     body('date')
+        .trim()
+        .notEmpty()
         .isISO8601()
         .withMessage('Date is required and should be in ISO8601 format.'),
     body('time')
