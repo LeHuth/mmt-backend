@@ -8,12 +8,12 @@ const router = Router();
 router.get('/get/all', EventController.getAll);
 
 // get event by id
-router.get('/get/:id', EventController.teapot);
+router.get('/get/:id', EventController.getById);
 
 // create new event
 router.post('/create', eventValidationRules,validateRequest, EventController.create);
 
 // update event
-router.put('/update/:id', EventController.teapot);
+router.patch('/update/:id', EventController.update);
 
 export default router;

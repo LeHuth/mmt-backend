@@ -7,8 +7,16 @@ const teapot = (req:Request, res:Response) => {
 };
 
 const create = (req:Request, res: Response) => {
-    EventModel.create(req.body).then((data:Document) => {
+    EventModel.create(req.body).then((data) => {
         return res.status(201).json(data);
+    }).catch((err) => {
+        return res.status(500).json({message: err.message});
+    });
+}
+
+const update = (req:Request, res:Response) => {
+    EventModel.findByIdAndUpdate(req.params.id, req.body,{new:true}).then((data) => {
+        return res.status(200).json(data);
     }).catch((err) => {
         return res.status(500).json({message: err.message});
     });
@@ -22,4 +30,12 @@ const getAll = (req:Request, res:Response) => {
     });
 }
 
-export default {teapot, create, getAll};
+const getById = (req:Request, res:Response) => {
+    EventModel.findById(req.params.id).then((data) => {
+        return res.status(200).json(data);
+    }).catch((err) => {
+        return res.status(500).json({message: err.message});
+    });
+}
+
+export default {teapot, create, getAll, update, getById};
