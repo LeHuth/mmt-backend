@@ -9,7 +9,7 @@ chai.use(chaiHttp);
 describe('Event Routes', () => {
     it('should return all events', (done) => {
         chai.request(server)
-        .get('/event/get/all')
+        .get('/events/get/all')
         .end((err, res) => {
             res.should.have.status(200);
             res.body.should.be.a('array');
@@ -19,7 +19,7 @@ describe('Event Routes', () => {
 
     it('should create an event', (done) => {
         chai.request(server)
-        .post('/event/create')
+        .post('/events/create')
         .send({
             title: 'Test Event',
             description: 'This is a test event.',
@@ -50,7 +50,7 @@ describe('Event Routes', () => {
 
     it('should return 400 if missing required fields', (done) => {
         chai.request(server)
-        .post('/event/create')
+        .post('/events/create')
         .send({
             missing: 'required',
         })
