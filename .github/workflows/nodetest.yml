@@ -29,6 +29,5 @@ jobs:
       run: |
         touch .env
         echo MONGO_URI=${{ secrets.ENGINE_API_KEY }} >> .env
-      echo "repository variable : $MONGO_URI"
     - run: yarn
     - run: yarn test
