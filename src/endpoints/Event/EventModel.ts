@@ -7,7 +7,7 @@ type ticketInfoObject = {
     available: number;
 }
 
-interface IEvent {
+export interface IEvent {
     title: string;
     description: string;
     date: Date;
@@ -33,6 +33,6 @@ const eventSchema = new Schema<IEvent>({
     ticketInfo: {type: Object, required: true}
 })
 
-const EventModel = model("EventModel", eventSchema)
+const EventModel = model<IEvent>("EventModel", eventSchema)
 
 export default EventModel;
