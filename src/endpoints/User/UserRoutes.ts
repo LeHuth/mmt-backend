@@ -1,8 +1,5 @@
-import express, { Request, Response } from 'express';
+import express from 'express';
 import UserController from "../User/UserController"
-//@ts-ignore
-import { check, validationResult } from 'express-validator';
-
 
 const router = express.Router();
 
