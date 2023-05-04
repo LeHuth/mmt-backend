@@ -2,7 +2,6 @@ import  { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import bcrypt from "bcryptjs"
 import UserModel from './UserModel';
-import UserRoutes from "./UserRoutes";
 
 const registration = async (req: Request, res: Response) => {
     const { username, email, password, isAdmin, isOrganizer } = req.body;
@@ -50,7 +49,7 @@ const login = async (req: Request, res: Response) => {
     try {
         // Authenticate user
         const user = await UserModel.findOne({ email });
-        if (!user) {
+        if (!user || !user.password) {
             return res.status(400).json({ msg: 'Invalid email or password' });
         }
 
