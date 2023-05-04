@@ -1,10 +1,12 @@
-import express, {Request, Response} from "express";
+import express from "express";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 import cors from "cors";
-import jwt from "jsonwebtoken";
 import * as process from "process";
+
+import EventRoutes from "./endpoints/Event/EventRoutes";
 import UserRoutes from "./endpoints/User/UserRoutes";
+
 dotenv.config();
 const app = express();
 app.use(cors());
@@ -12,7 +14,9 @@ app.use(express.json({limit: '50mb'}));
 // @ts-ignore
 app.use(express.json());
 
+app.use('/events',EventRoutes)
 app.use('/users', UserRoutes);
+
 // todo: maybe extract this function to a separate file
 async function connectToMongo() {
     console.log('Connecting to MongoDB...');
@@ -35,3 +39,5 @@ connectToMongo().then(() => {
         console.log(`Server started on ${process.env.PORT}`);
     });
 })
+
+export default app;
