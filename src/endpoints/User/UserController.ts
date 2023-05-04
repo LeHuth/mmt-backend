@@ -1,4 +1,5 @@
-import express, { Request, Response } from 'express';
+import  { Request, Response } from 'express';
+import jwt from 'jsonwebtoken';
 import bcrypt from "bcryptjs"
 import UserModel from './UserModel';
 import UserRoutes from "./UserRoutes";
@@ -42,5 +43,48 @@ const registration = async (req: Request, res: Response) => {
         });
     }
 
-export default { registration }
+const login = async (req: Request, res: Response) => {
+
+    const { email, password } = req.body;
+
+    try {
+        // Authenticate user
+        const user = await UserModel.findOne({ email });
+        if (!user) {
+            return res.status(400).json({ msg: 'Invalid email or password' });
+        }
+
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
+            return res.status(400).json({ msg: 'Invalid email or password' });
+        }
+
+        // Generate JWT
+        const payload = {
+            user: {
+                id: user.id
+            }
+        };
+
+        try {
+            const token = jwt.sign(payload, process.env.JWT_SECRET!, { expiresIn: '1h' });
+            res.json({
+                token,
+                user: {
+                    id: user.id,
+                    name: user.username,
+                    email: user.email
+                }
+            });
+        } catch (err) {
+            console.error(err);
+            res.status(500).send('Server error');
+        }
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Server error');
+    }
+}
+
+export default { registration, login }
 
