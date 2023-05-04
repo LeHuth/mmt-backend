@@ -1,14 +1,11 @@
-import express, {Request, Response} from "express";
+import express from "express";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 import cors from "cors";
-import jwt from "jsonwebtoken";
 import * as process from "process";
-import { fileURLToPath } from 'url';
-import { dirname } from 'path';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+
+
 
 dotenv.config();
 const app = express();
