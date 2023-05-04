@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import cors from "cors";
 import jwt from "jsonwebtoken";
 import * as process from "process";
+import UserRoutes from "./endpoints/User/UserRoutes";
 
 dotenv.config();
 const app = express();
@@ -12,6 +13,7 @@ app.use(cors());
 // @ts-ignore
 app.use(express.json());
 
+app.use('/users', UserRoutes);
 // todo: maybe extract this function to a separate file
 async function connectToMongo() {
     console.log('Connecting to MongoDB...');

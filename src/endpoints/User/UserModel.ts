@@ -3,7 +3,7 @@ import { Schema, model } from "mongoose"
 interface IUser{
     username: string
     email: string
-    password: string;
+    password?: string;
     isAdmin: boolean;
     isOrganizer: boolean;
 }
@@ -15,7 +15,7 @@ interface IUserMethods {
 // basic user schema, extend this for more complex users
 const userSchema = new Schema<IUser> ({
     username: { type: String, unique: true, required: true },
-    email: {type: String, required: true },
+    email: {type: String, unique:true, required: true },
     password: {type: String, required: true },
     isAdmin: {type: Boolean, default: false },
     isOrganizer: {type: Boolean, default: false },

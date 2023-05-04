@@ -5,3 +5,5 @@ const router = express.Router();
 
 // POST request um user zu registrieren
 router.post("/user/registration", UserController.registration);
+
+export default router;
