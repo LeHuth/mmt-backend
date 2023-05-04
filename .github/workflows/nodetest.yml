@@ -28,6 +28,6 @@ jobs:
     - name: create env file
       run: |
         touch .env
-        echo MONGO_URI=${{ secrets.ENGINE_API_KEY }} >> .env
+        echo MONGO_URI=${{ secrets.MONGO_URI }} >> .env
     - run: yarn
     - run: yarn test
