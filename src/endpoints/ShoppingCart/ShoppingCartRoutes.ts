@@ -3,7 +3,8 @@ import ShoppingCartController from "./ShoppingCartController"
 
 const router = express.Router();
 
-// POST request um user zu registrieren
-router.post("/addItem/:id", ShoppingCartController.create);
+// POST request um user zu adden
+router.post("/addItem/:id", ShoppingCartController.add);
+
 
 export default router;
