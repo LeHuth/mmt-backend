@@ -10,4 +10,14 @@ const create = (req: Request, res: Response) => {
             return res.status(500).json({message: err.message});
         });
 }
-export default { create };
+
+const get = (req:Request, res:Response) => {
+    TicketModel.findById(req.params.id).then((data) => {
+        return res.status(200).json(data);
+    }).catch((err) => {
+        return res.status(500).json({message: err.message});
+    })
+}
+
+
+export default { create, get };
