@@ -9,5 +9,8 @@ router.post("/create", TicketController.create);
 //get ticket ba ID
 router.get("/get/:id", TicketController.get);
 
+//delete ticket
+router.delete("/delete/:id", TicketController.deleteById);
+
 
 export default router;
