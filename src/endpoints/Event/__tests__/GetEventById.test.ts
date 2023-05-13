@@ -3,15 +3,34 @@ import chaiHttp from 'chai-http';
 const expect = chai.expect;
 const should = chai.should();
 import server from "../../../server";
+import jwt from "jsonwebtoken";
+import process from "process";
 
 chai.use(chaiHttp);
 
 describe('create event, get by id and delete by id', () => {
     let id = ''
+    let token = '';
+    it('should a auth token', (done) => {
+        chai.request(server)
+            .post('/users/user/login')
+            .send({
+                email: 'test@mail.de',
+                password: '1234'
+            }).end((err, res) => {
+            res.should.have.status(200);
+            res.body.should.be.a('object');
+            token = res.body.token;
+            done();
+        });
+    });
     it('should return event with given id', (done) => {
+        // @ts-ignore
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const userId = decoded.user.id;
         // Create a test event
         chai.request(server)
-            .post('/events/create')
+            .post('/events/create').set('Authorization', `Bearer ${token}`)
             .send({
                 title: 'Test Event',
                 description: 'This is a test event.',
@@ -20,7 +39,7 @@ describe('create event, get by id and delete by id', () => {
                 location: 'Test Location',
                 category: 'TestCategory',
                 tags: ['tag1', 'tag2'],
-                organizer: 'Test Organizer',
+                organizer: userId,
                 image: 'test-image-url',
                 ticketInfo: {
                     ticketTypes: [
@@ -52,7 +71,7 @@ describe('create event, get by id and delete by id', () => {
 
     it('should delete the event',  (done) => {
         chai.request(server)
-            .delete(`/events/delete/${id}`)
+            .delete(`/events/delete/${id}`).set('Authorization', `Bearer ${token}`)
             .end((err, res) => {
                 res.should.have.status(200);
                 done();

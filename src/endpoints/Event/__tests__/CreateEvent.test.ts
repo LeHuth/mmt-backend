@@ -1,62 +1,86 @@
 import chai from 'chai';
 import chaiHttp from 'chai-http';
+import server from "../../../server";
+import jwt from "jsonwebtoken";
+import * as process from "process";
+
 const expect = chai.expect;
 const should = chai.should();
-import server from "../../../server";
 
 chai.use(chaiHttp);
 
 describe('Event Routes', () => {
+    let token = '';
     it('should return all events', (done) => {
         chai.request(server)
-        .get('/events/get/all')
-        .end((err, res) => {
+            .get('/events/get/all')
+            .end((err, res) => {
+                res.should.have.status(200);
+                res.body.should.be.a('array');
+                done();
+            });
+    });
+
+    it('should a auth token', (done) => {
+        chai.request(server)
+            .post('/users/user/login')
+            .send({
+                email: 'test@mail.de',
+                password: '1234'
+            }).end((err, res) => {
             res.should.have.status(200);
-            res.body.should.be.a('array');
+            res.body.should.be.a('object');
+            token = res.body.token;
             done();
         });
     });
 
+
     it('should create an event', (done) => {
+        // decode token
+        // @ts-ignore
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const userId = decoded.user.id;
+
         chai.request(server)
-        .post('/events/create')
-        .send({
-            title: 'Test Event',
-            description: 'This is a test event.',
-            date: new Date(),
-            time: '12:00',
-            location: 'Test Location',
-            category: 'TestCategory',
-            tags: ['tag1', 'tag2'],
-            organizer: 'Test Organizer',
-            image: 'test-image-url',
-            ticketInfo: {
-                ticketTypes: [
-                    {
-                        name: 'General Admission',
-                    }
-                ],
-                name: 'General Admission',
-                price: 20,
-                available: 100,
-            }
-        })
-        .end((err, res) => {
-            res.should.have.status(201);
-            res.body.should.be.a('object');
-            done();
-        });
+            .post('/events/create',).set('Authorization', `Bearer ${token}`)
+            .send({
+                title: 'Test Event',
+                description: 'This is a test event.',
+                date: new Date(),
+                time: '12:00',
+                location: 'Test Location',
+                category: 'TestCategory',
+                tags: ['tag1', 'tag2'],
+                organizer: userId,
+                image: 'test-image-url',
+                ticketInfo: {
+                    ticketTypes: [
+                        {
+                            name: 'General Admission',
+                        }
+                    ],
+                    name: 'General Admission',
+                    price: 20,
+                    available: 100,
+                }
+            })
+            .end((err, res) => {
+                res.should.have.status(201);
+                res.body.should.be.a('object');
+                done();
+            });
     });
 
     it('should return 400 if missing required fields', (done) => {
         chai.request(server)
-        .post('/events/create')
-        .send({
-            missing: 'required',
-        })
-        .end((err, res) => {
-            res.should.have.status(400);
-            done();
-        });
+            .post('/events/create')
+            .send({
+                missing: 'required',
+            })
+            .end((err, res) => {
+                res.should.have.status(400);
+                done();
+            });
     });
 });

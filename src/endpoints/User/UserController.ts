@@ -14,7 +14,7 @@ const registration = async (req: Request, res: Response) => {
     
     //prüfen ob daten korrekt
     //TODO: expresss-validator nutzen
-    const validEmail: RegExp = /^[\w.-]+@[a-zA-Z0-9]+\.[a-zA-Z]{2,}$/i;
+    const validEmail = /^[\w.-]+@[a-zA-Z0-9]+\.[a-zA-Z]{2,}$/i;
     if(!validEmail.test(email)){
         return res.status(400).json({ message: "Invalid Email address" });
     }
@@ -51,6 +51,9 @@ const login = async (req: Request, res: Response) => {
         // Authenticate user
         const user = await UserModel.findOne({ email });
         if (!user) {
+            return res.status(400).json({ msg: 'Invalid email or password' });
+        }
+        if (!user.password) {
             return res.status(400).json({ msg: 'Invalid email or password' });
         }
 
