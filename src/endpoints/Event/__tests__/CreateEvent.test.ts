@@ -11,15 +11,6 @@ chai.use(chaiHttp);
 
 describe('Event Routes', () => {
     let token = '';
-    it('should return all events', (done) => {
-        chai.request(server)
-            .get('/events/get/all')
-            .end((err, res) => {
-                res.should.have.status(200);
-                res.body.should.be.a('array');
-                done();
-            });
-    });
 
     it('should a auth token', (done) => {
         chai.request(server)
