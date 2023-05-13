@@ -15,8 +15,8 @@ describe('create event, get by id and delete by id', () => {
         chai.request(server)
             .post('/users/user/login')
             .send({
-                email: 'test@mail.de',
-                password: '1234'
+                email: 'organizer@mail.de',
+                password: 'organizer'
             }).end((err, res) => {
             res.should.have.status(200);
             res.body.should.be.a('object');

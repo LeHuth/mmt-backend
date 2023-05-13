@@ -25,8 +25,8 @@ describe('Event Routes', () => {
         chai.request(server)
             .post('/users/user/login')
             .send({
-                email: 'test@mail.de',
-                password: '1234'
+                email: 'organizer@mail.de',
+                password: 'organizer'
             }).end((err, res) => {
             res.should.have.status(200);
             res.body.should.be.a('object');
@@ -38,8 +38,11 @@ describe('Event Routes', () => {
 
     it('should create an event', (done) => {
         // decode token
-        // @ts-ignore
+        if (!process.env.JWT_SECRET) {
+            throw new Error('JWT_SECRET not set');
+        }
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        // @ts-ignore
         const userId = decoded.user.id;
 
         chai.request(server)
