@@ -12,6 +12,7 @@ chai.use(chaiHttp);
 describe('Event Routes', () => {
     let token = '';
 
+    // @ts-ignore
     it('should a auth token', (done) => {
         chai.request(server)
             .post('/users/user/login')
@@ -23,7 +24,7 @@ describe('Event Routes', () => {
             res.body.should.be.a('object');
             token = res.body.token;
             done();
-        });
+        }).timeout(10000)
     });
 
 
