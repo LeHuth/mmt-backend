@@ -7,15 +7,6 @@ import server from "../../../server";
 chai.use(chaiHttp);
 
 describe('Event Routes', () => {
-    it('should return all events', (done) => {
-        chai.request(server)
-        .get('/events/get/all')
-        .end((err, res) => {
-            res.should.have.status(200);
-            res.body.should.be.a('array');
-            done();
-        });
-    });
 
     it('should create an event', (done) => {
         chai.request(server)
