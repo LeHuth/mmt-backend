@@ -6,6 +6,8 @@ import * as process from "process";
 
 import EventRoutes from "./endpoints/Event/EventRoutes";
 import UserRoutes from "./endpoints/User/UserRoutes";
+import UserModel from "./endpoints/User/UserModel";
+import {createDefaultAdmin, createDefaultOrganizer, createDefaultUser} from "./helper";
 
 dotenv.config();
 const app = express();
@@ -26,7 +28,11 @@ try {
     }
     const connection = await mongoose.connect(process.env.MONGO_URI);
     console.log('MongoDB connected');
-    // todo: add function that creates admin user if it doesn't exist
+    //add function that creates admin user if it doesn't exist
+    await createDefaultAdmin();
+    await createDefaultOrganizer();
+    await createDefaultUser();
+
 } catch (error) {
     console.error('Error connecting to MongoDB:', error);
 }

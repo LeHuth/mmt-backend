@@ -2,6 +2,7 @@ import  { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import bcrypt from "bcryptjs"
 import UserModel from './UserModel';
+import * as process from "process";
 
 const registration = async (req: Request, res: Response) => {
     const { username, email, password, isAdmin, isOrganizer } = req.body;
@@ -13,7 +14,7 @@ const registration = async (req: Request, res: Response) => {
     
     //prüfen ob daten korrekt
     //TODO: expresss-validator nutzen
-    const validEmail: RegExp = /^[\w.-]+@[a-zA-Z0-9]+\.[a-zA-Z]{2,}$/i;
+    const validEmail = /^[\w.-]+@[a-zA-Z0-9]+\.[a-zA-Z]{2,}$/i;
     if(!validEmail.test(email)){
         return res.status(400).json({ message: "Invalid Email address" });
     }
@@ -50,11 +51,13 @@ const login = async (req: Request, res: Response) => {
         // Authenticate user
         const user = await UserModel.findOne({ email });
         if (!user || !user.password) {
+            console.log('User not found');
             return res.status(400).json({ msg: 'Invalid email or password' });
         }
 
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
+            console.log('Invalid credentials');
             return res.status(400).json({ msg: 'Invalid email or password' });
         }
 
@@ -65,8 +68,11 @@ const login = async (req: Request, res: Response) => {
             }
         };
 
+        if(!process.env.JWT_SECRET){
+            return res.status(500).json({ msg: 'Server error' });
+        }
         try {
-            const token = jwt.sign(payload, process.env.JWT_SECRET!, { expiresIn: '1h' });
+            const token = jwt.sign(payload, process.env.JWT_SECRET , { expiresIn: '1h' });
             res.json({
                 token,
                 user: {
