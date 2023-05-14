@@ -1,6 +1,7 @@
 import { Schema, model } from "mongoose"
+import bcrypt from "bcryptjs"
 
-interface IUser{
+export interface IUser{
     username: string
     email: string
     password?: string;
@@ -12,6 +13,7 @@ interface IUser{
 interface IUserMethods {
     checkPassword: (password: string) => Promise<boolean>
 }
+
 // basic user schema, extend this for more complex users
 const userSchema = new Schema<IUser> ({
     username: { type: String, unique: true, required: true },
@@ -21,6 +23,12 @@ const userSchema = new Schema<IUser> ({
     isOrganizer: {type: Boolean, required: true, default: false },
 })
 
-
+userSchema.method("checkPassword", async function (password: string): Promise<boolean> {
+  if (!this.password) {
+    throw new Error("Passwort nicht gespeichert.");
+  }
+  return await bcrypt.compare(password, this.password);
+});
+  
 const UserModel = model("UserModel", userSchema)
 export default UserModel;
