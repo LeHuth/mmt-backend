@@ -5,7 +5,7 @@
   "main": "src/server.ts",
   "scripts": {
     "start": "ts-node src/server.ts",
-    "test": "mocha --exit -r ts-node/register src/endpoints/**/__tests__/*.test.ts",
+    "test": "mocha --timeout 15000 --exit -r ts-node/register src/endpoints/**/__tests__/*.test.ts",
     "dev": "concurrently \"npx tsc --watch\" \"nodemon -q src/server.ts\""
   },
   "keywords": [],

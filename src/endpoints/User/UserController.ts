@@ -51,11 +51,13 @@ const login = async (req: Request, res: Response) => {
         // Authenticate user
         const user = await UserModel.findOne({ email });
         if (!user || !user.password) {
+            console.log('User not found');
             return res.status(400).json({ msg: 'Invalid email or password' });
         }
 
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
+            console.log('Invalid credentials');
             return res.status(400).json({ msg: 'Invalid email or password' });
         }
 
