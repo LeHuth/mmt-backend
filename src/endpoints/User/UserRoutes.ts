@@ -9,4 +9,7 @@ router.post("/user/registration", UserController.registration);
 // POST /users/login
 router.post('/user/login', UserController.login);
 
+// GET /users/get/:id
+router.get('/user/get/:id', UserController.getUserById);
+
 export default router;

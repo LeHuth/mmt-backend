@@ -91,5 +91,18 @@ const login = async (req: Request, res: Response) => {
     }
 }
 
-export default { registration, login }
+const getUserById = async (req: Request, res: Response) => {
+    try {
+        const user = await UserModel.findById(req.params.id).select('-password');
+        if (!user) {
+            return res.status(404).json({ msg: 'User not found' });
+        }
+        res.json(user);
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Server error');
+    }
+}
+
+export default { registration, login, getUserById }
 
