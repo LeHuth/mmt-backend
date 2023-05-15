@@ -12,4 +12,7 @@ router.post('/user/login', UserController.login);
 // GET /users/get/:id
 router.get('/user/get/:id', UserController.getUserById);
 
+// DELETE /users/delete/:id
+router.delete('/user/delete/:id', UserController.deleteUserById);
+
 export default router;

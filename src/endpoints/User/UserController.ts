@@ -36,7 +36,7 @@ const registration = async (req: Request, res: Response) => {
     //user erstellen und in db speichern,
     UserModel.create({username:username, email:email, isAdmin:isAdmin, isOrganizer:isOrganizer, password:hashedPassword})
         .then((user) => {
-            res.status(201).json({username: user.username, email: user.email, isAdmin: user.isAdmin, isOrganizer: user.isOrganizer});
+            res.status(201).json({_id:user._id,username: user.username, email: user.email, isAdmin: user.isAdmin, isOrganizer: user.isOrganizer});
         }).catch((error) => {
             console.error(error);
             res.status(500).json({error: "Error creating user"});
@@ -104,5 +104,20 @@ const getUserById = async (req: Request, res: Response) => {
     }
 }
 
-export default { registration, login, getUserById }
+const deleteUserById = async (req: Request, res: Response) => {
+    try {
+       const deletedUser = await UserModel.findByIdAndDelete(req.params.id);
+        if (!deletedUser) {
+            return res.status(404).send({ msg: 'User not found' });
+        } else {
+            console.log('User deleted')
+            return res.status(204).send({ msg: 'User deleted' });
+        }
+    } catch (err) {
+        console.error(err);
+        return res.status(500).send('Server error');
+    }
+}
+
+export default { registration, login, getUserById, deleteUserById };
 
