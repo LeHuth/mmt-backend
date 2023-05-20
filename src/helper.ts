@@ -69,9 +69,6 @@ export const createDefaultUser = async () => {
 const setupGoogleStorageConnection = (): Bucket => {
     try {
         const tst = JSON.parse(process.env.GC_KEY_FILE || "");
-        console.log(tst)
-
-        // @ts-ignore
         // @ts-ignore
         const gc = new Storage({
             projectId: "rare-style-385113",

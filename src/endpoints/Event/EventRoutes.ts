@@ -10,6 +10,10 @@ router.get('/get/all', EventController.getAll);
 // get event by id
 router.get('/get/:id', EventController.getById);
 
+// filter events
+router.get('/filter', EventController.filter);
+
+
 // create new event
 router.post('/create', eventValidationRules,validateRequest, authenticateJWT, isOrganizer, EventController.create);
 

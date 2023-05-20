@@ -66,4 +66,35 @@ const deleteById = (req:Request, res:Response) => {
     });
 }
 
-export default {teapot, create, getAll, update, getById, deleteById};
+const filter = (req:Request, res:Response) => {
+    //get query params
+    const { title, description} = req.query;
+    interface Filter {
+        title?: {$regex: string, $options: string},
+        description?: {$regex: string, $options: string},
+        date?: {$regex: string, $options: string},
+        time?: {$regex: string, $options: string},
+        location?: {$regex: string, $options: string},
+        category?: {$regex: string, $options: string},
+        tags?: {$regex: string, $options: string},
+        organizer?: {$regex: string, $options: string},
+        maxParticipants?: {$regex: string, $options: string},
+    }
+    const filter:Filter = {};
+
+    if(title) {
+        filter.title = {$regex: title as string, $options: "i"};
+    }
+    if(description) {
+        filter.description = {$regex: description as string, $options: "i"};
+    }
+    EventModel.find(filter).then((data) => {
+
+        return res.status(200).json(data);
+    }).catch((err) => {
+        return res.status(500).json({message: err.message});
+    });
+
+}
+
+export default {teapot, create, getAll, update, getById, deleteById, filter};
