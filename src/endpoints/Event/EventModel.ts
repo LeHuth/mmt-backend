@@ -1,12 +1,5 @@
 import {model , Schema} from 'mongoose';
 
-type ticketInfoObject = {
-    ticketTypes: object[];
-    name: string;
-    price: number;
-    available: number;
-}
-
 export interface IEvent {
     title: string;
     description: string;
@@ -17,7 +10,8 @@ export interface IEvent {
     tags: string[];
     organizer: string;
     image: string;
-    ticketInfo: ticketInfoObject;
+    available: number;
+    price: number;
 }
 
 const eventSchema = new Schema<IEvent>({
@@ -30,7 +24,8 @@ const eventSchema = new Schema<IEvent>({
     tags: {type: [String], required: true},
     organizer: {type: String, required: true},
     image: {type: String, required: true},
-    ticketInfo: {type: Object, required: true}
+    available: {type: Number, required: true},
+    price: {type: Number, required: true}
 })
 
 const EventModel = model<IEvent>("EventModel", eventSchema)
