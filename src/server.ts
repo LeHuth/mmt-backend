@@ -3,7 +3,6 @@ import mongoose from "mongoose";
 import dotenv from "dotenv";
 import cors from "cors";
 import * as process from "process";
-
 import EventRoutes from "./endpoints/Event/EventRoutes";
 import UserRoutes from "./endpoints/User/UserRoutes";
 import UserModel from "./endpoints/User/UserModel";
