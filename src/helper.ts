@@ -1,6 +1,7 @@
 import {Bucket, Storage} from "@google-cloud/storage";
 import UserModel from "./endpoints/User/UserModel";
 import bcrypt from "bcryptjs";
+import process from "process";
 
 
 export const createDefaultAdmin = async () => {
@@ -67,17 +68,46 @@ export const createDefaultUser = async () => {
 }
 const setupGoogleStorageConnection = (): Bucket => {
     try {
+        const tst = JSON.parse(process.env.GC_KEY_FILE || "");
+        console.log(tst)
+
+        // @ts-ignore
+        // @ts-ignore
         const gc = new Storage({
-            keyFilename: './rare-style-385113-66aef184c962.json',
-            projectId: "rare-style-385113"
+            projectId: "rare-style-385113",
+            credentials: {
+                type: tst.type,
+                // @ts-ignore
+                project_id: tst.project_id,
+                private_key_id: tst.private_key_id,
+                private_key:`-----BEGIN PRIVATE KEY-----\n${tst.private_key}\n-----END PRIVATE KEY-----\n`,
+                client_email: tst.client_email,
+                client_id: tst.client_id,
+                auth_uri: 'https://accounts.google.com/o/oauth2/auth',
+                token_uri: 'https://oauth2.googleapis.com/token',
+                auth_provider_x509_cert_url: 'https://www.googleapis.com/oauth2/v1/certs',
+                client_x509_cert_url: tst.client_x509_cert_url,
+            },
+
         });
+
         return gc.bucket("bht-mmt-bucket");
+
+
     } catch (error) {
         console.error('Error connecting to Google Cloud Storage:', error);
         throw error;
     }
 
 }
+async function makeBucketPublic(gcBucket: any) {
+    gcBucket.makePublic().then(() => {
+        console.log(`Bucket ${gcBucket.name} is now public.`);
+    }).catch((error: any) => {
+        console.error(`Failed to make bucket ${gcBucket.name} public:`, error);
+    })
+}
+
 
 export const uploadImage = (image: string, imageName: string) => new Promise((resolve, reject) => {
     if (!image) {
@@ -90,12 +120,13 @@ export const uploadImage = (image: string, imageName: string) => new Promise((re
     }
     const imageBuffer = Buffer.from(base64EncodedImageString, 'base64');
     const mmtbucket = setupGoogleStorageConnection();
+    makeBucketPublic(mmtbucket);
     const blob = mmtbucket.file(imageName);
     const blobStream = blob.createWriteStream({
         resumable: false,
     });
     blobStream.on('finish', () => {
-        const publicUrl = `https://storage.cloud.google.com/${mmtbucket.name}/${blob.name}`;
+        const publicUrl = `https://storage.googleapis.com/${mmtbucket.name}/${blob.name}`;
         return resolve(publicUrl);
     });
     blobStream.end(imageBuffer);

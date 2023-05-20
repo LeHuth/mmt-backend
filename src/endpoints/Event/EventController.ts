@@ -8,12 +8,22 @@ const teapot = (req:Request, res:Response) => {
 };
 
 const create = (req:Request, res: Response) => {
-    EventModel.create(req.body)
-        .then((data) => {
-            return res.status(201).json(data);})
-        .catch((err) => {
-            return res.status(500).json({message: err.message});
-        });
+    const {image , imageName} = req.body;
+    if(!image || !imageName) {
+        return res.status(400).json({message: "Image and imageName are required"});
+    }
+    uploadImage(image, imageName).then((img_url) => {
+        req.body.image = img_url;
+        EventModel.create(req.body)
+            .then((data) => {
+                return res.status(201).json(data);})
+            .catch((err) => {
+                return res.status(500).json({message: err.message});
+            });
+    }).catch((err) => {
+        return res.status(500).json({message: err.message});
+    })
+
     /* TODO: Reimplement image upload
     uploadImage(req.body.image, req.body.imageName)
         .then((img_url) => {
