@@ -1,15 +1,16 @@
 import { Schema, model } from "mongoose"
 import TicketModel from "../Ticket/TicketModel";
+import EventModel from "../Event/EventModel";
 
 interface IShoppingCart{
     creatorId: string;
-    items: object[];
+    items: {[event: string]: number};
     totalPrice: number;
 }
 
 const shoppingCartSchema = new Schema<IShoppingCart> ({
     creatorId: {type: String, unique: true, required: true},
-    items: {type: [TicketModel]},
+    items: {type: {String: Number}},
     totalPrice: {type: Number, default: 0}
 })
 

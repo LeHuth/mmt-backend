@@ -1,21 +1,24 @@
-import express from 'express';
-import ShoppingCartController from "./ShoppingCartController"
+import { Router } from "express";
+import ShoppingCartController from "./ShoppingCartController";
 
-const router = express.Router();
 
-// POST request um Item zu adden
-router.post("/addItem/:userId/:eventId", ShoppingCartController.add);
+const router = Router();
 
-// request to clear shoopingcart
-router.delete("/clear/:id", ShoppingCartController.clear);
+// Create a new shopping cart for a user
+router.post("/", ShoppingCartController.create);
 
-//request um alle Items zu bekommen
-router.get("/getItems/:id", ShoppingCartController.getAllItems)
+// Retrieve a user's active shopping cart
+router.get("/:creatorId", ShoppingCartController.read);
 
-//request um Item zu löschen
-router.delete("/deleteItem/:userId/:itemId", ShoppingCartController.deleteOneItem)
-//request um gesamtPreis zu bekommen
-router.get("/getPrice(:id", ShoppingCartController.getPrice)
+// Add an item to a user's shopping cart
+router.post("/:creatorId/items", ShoppingCartController.addItem);
+
+
+// Remove an item from a user's shopping cart
+router.delete("/:creatorId/items/:itemId", ShoppingCartController.removeItem);
+
+// Clear all items from a user's shopping cart
+//router.delete("/:creatorId/items", ShoppingCartController.clearCart);
 
 
 export default router;
