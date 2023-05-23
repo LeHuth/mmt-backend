@@ -3,10 +3,12 @@ import mongoose from "mongoose";
 import dotenv from "dotenv";
 import cors from "cors";
 import * as process from "process";
-import EventRoutes from "./endpoints/Event/EventRoutes";
-import UserRoutes from "./endpoints/User/UserRoutes";
-import UserModel from "./endpoints/User/UserModel";
+import router from "./routes";
 import {createDefaultAdmin, createDefaultOrganizer, createDefaultUser} from "./helper";
+// @ts-ignore
+import swaggerUi from 'swagger-ui-express';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const swaggerFile = require('../swagger_output.json');
 
 dotenv.config();
 const app = express();
@@ -14,9 +16,8 @@ app.use(cors());
 app.use(express.json({limit: '50mb'}));
 // @ts-ignore
 app.use(express.json());
-
-app.use('/events',EventRoutes)
-app.use('/users', UserRoutes);
+app.use('/doc', swaggerUi.serve, swaggerUi.setup(swaggerFile));
+app.use(router);
 
 // todo: maybe extract this function to a separate file
 async function connectToMongo() {

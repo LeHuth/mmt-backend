@@ -6,7 +6,8 @@
   "scripts": {
     "start": "ts-node src/server.ts",
     "test": "mocha --timeout 15000 --exit -r ts-node/register src/endpoints/**/__tests__/*.test.ts",
-    "dev": "concurrently \"npx tsc --watch\" \"nodemon -q src/server.ts\""
+    "dev": "concurrently \"npx tsc --watch\" \"nodemon -q src/server.ts\"",
+    "swagger-autogen": "ts-node swagger.ts"
   },
   "keywords": [],
   "author": "leonard huth",
@@ -48,6 +49,7 @@
     "jest": "^29.5.0",
     "mocha": "^10.2.0",
     "nodemon": "^2.0.22",
+    "swagger-autogen": "^2.23.1",
     "ts-node": "^9.1.1",
     "typescript": "^5.0.4"
   }
