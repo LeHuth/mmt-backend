@@ -9,6 +9,7 @@ type ticketInfoObject = {
 
 export interface IEvent {
     _id?: string;
+    stripe_id?: string;
     title: string;
     description: string;
     date: Date;
@@ -23,6 +24,7 @@ export interface IEvent {
 
 const eventSchema = new Schema<IEvent>({
     title: {type: String, required: true},
+    stripe_id: {type: String, required: true},
     description: {type: String, required: true},
     date: {type: Date, required: true},
     time: {type: String, required: true},

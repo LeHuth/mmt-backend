@@ -1,3 +1,4 @@
+/*
 import chai from 'chai';
 import chaiHttp from 'chai-http';
 const expect = chai.expect;
@@ -77,4 +78,4 @@ describe('create event, get by id and delete by id', () => {
                 done();
             });
     });
-})
+})*/

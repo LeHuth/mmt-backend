@@ -2,6 +2,8 @@ import {Request, Response} from "express";
 import EventModel from "./EventModel";
 import {Document} from "mongoose";
 import {uploadImage} from "../../helper";
+import paymentController from "../Payment/PaymentController";
+
 
 const teapot = (req:Request, res:Response) => {
     return res.status(418).json({message: "I'm a teapot"});
@@ -14,12 +16,18 @@ const create = (req:Request, res: Response) => {
     }
     uploadImage(image, imageName).then((img_url) => {
         req.body.image = img_url;
-        EventModel.create(req.body)
-            .then((data) => {
-                return res.status(201).json(data);})
-            .catch((err) => {
-                return res.status(500).json({message: err.message});
-            });
+        paymentController.createProduct(req.body).then((product) => {
+            req.body.stripe_id = product.id;
+            EventModel.create(req.body)
+                .then((data) => {
+                    return res.status(201).json(data);
+                })
+                .catch((err) => {
+                    return res.status(500).json({message: err.message});
+                });
+        }).catch((err) => {
+            return res.status(500).json({message: err.message});
+        });
     }).catch((err) => {
         return res.status(500).json({message: err.message});
     })

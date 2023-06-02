@@ -7,6 +7,7 @@ export interface IUser{
     password?: string;
     isAdmin: boolean;
     isOrganizer: boolean;
+    stripe_id: string;
 }
 
 // todo: implement method to check password (used for login)
@@ -20,6 +21,7 @@ const userSchema = new Schema<IUser> ({
     password: {type: String, required: true },
     isAdmin: {type: Boolean, required: true, default: false },
     isOrganizer: {type: Boolean, required: true, default: false },
+    stripe_id: {type: String, required: true},
 })
 
 

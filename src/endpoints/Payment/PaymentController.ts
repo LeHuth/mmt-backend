@@ -47,23 +47,41 @@ const test = async (req: Request, res: Response) => {
     res.status(200).send({message: "test"});
 }
 
-const createLineItems = (items: IEvent[]) => {
+const createLineItems = async (items: IEvent[], stripeInstance : any) => {
     console.log(items);
     const lineItems = [];
     for (const item of items) {
-        lineItems.push({
-            price_data: {
-                currency: 'eur',
-                product_data: {
+        /*product_data: {
                     name: item.title,
                     images: [item.image],
-                },
+                    price_data: {
+                currency: 'eur',
+                product: item.stripe_id,
                 unit_amount: item.ticketInfo.price * 100,
             },
+                },*/
+        const product = await stripeInstance.products.retrieve(item.stripe_id)
+        lineItems.push({
+            price: product.default_price,
             quantity: 1,
         });
     }
     return lineItems;
+}
+
+const createProduct = async (items: IEvent) => {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+    const product = await stripe.products.create({
+        name: items.title,
+        description: items.description,
+        images: [items.image],
+        default_price_data: {
+            currency: 'eur',
+            unit_amount: items.ticketInfo.price * 100,
+        },
+    });
+    return product;
 }
 
 const checkoutSession = async (req: Request, res: Response) => {
@@ -80,7 +98,7 @@ const checkoutSession = async (req: Request, res: Response) => {
             }
             eventArray.push(event);
         }
-        const lineItems = createLineItems(eventArray);
+        const lineItems = await createLineItems(eventArray, stripe);
         const session = await stripe.checkout.sessions.create({
             payment_method_types: ['card', 'paypal'],
             mode: 'payment',
@@ -95,4 +113,4 @@ const checkoutSession = async (req: Request, res: Response) => {
     }
 }
 
-export default {paymentIntent, checkoutSession, test};
+export default {paymentIntent, checkoutSession, test, createProduct};
