@@ -16,9 +16,9 @@ const create = (req: Request, res: Response) => {
     }
     uploadImage(image, imageName).then((img_url) => {
         req.body.image = img_url;
-        paymentController.createProduct(req.body, req.body.organizer).then((data) => {
-            req.body.stripe_id = data.account.id;
-            req.body.organizer_stripe_id = data.account.id;
+        paymentController.createProduct(req.body, req.body.organizer).then((stripe_data) => {
+            req.body.stripe_id = stripe_data.product.id;
+            req.body.organizer_stripe_id = stripe_data.account.id;
             EventModel.create(req.body)
                 .then((data) => {
                     return res.status(201).json(data);
