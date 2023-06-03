@@ -1,6 +1,8 @@
 import {Request, Response} from "express";
 import EventModel, {IEvent} from "../Event/EventModel";
+import UserModel, {IUser} from "../User/UserModel";
 import process from "process";
+import {Types} from "mongoose";
 
 const calculateOrderAmount = (items: IEvent[]) => {
     let sum = 0;
@@ -16,6 +18,52 @@ const calculateOrderAmount = (items: IEvent[]) => {
     }
     return 1400;
 };
+
+const createCustomer = async (user: IUser) => {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+    const customer = await stripe.customers.create({
+        email: user.email,
+        name: user.username,
+        metadata: {
+            _id: user._id,
+            isAdmin: user.isAdmin,
+            isOrganizer: user.isOrganizer,
+        }
+    });
+    return customer;
+}
+
+const createAccount = async (email: string, first_name: string, last_name: string, baseUrl: string) => {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+    const account = await stripe.accounts.create({
+        type: 'express',
+        email: email,
+        capabilities: {
+            card_payments: {requested: true},
+            transfers: {requested: true},
+        },
+        business_type: 'individual',
+        individual: {
+            email: email,
+            first_name: first_name,
+            last_name: last_name,
+        },
+        country: 'DE',
+        default_currency: 'eur',
+
+    });
+
+    const accountLink = await stripe.accountLinks.create({
+        account: account.id,
+        refresh_url: 'https://example.com/reauth',
+        return_url: `http://${baseUrl}/success`,
+        type: 'account_onboarding',
+    });
+    return {account_data: account, account_link: accountLink}
+}
+
 const paymentIntent = async (req: Request, res: Response) => {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
@@ -47,31 +95,31 @@ const test = async (req: Request, res: Response) => {
     res.status(200).send({message: "test"});
 }
 
-const createLineItems = async (items: IEvent[], stripeInstance : any) => {
+const createLineItems = async (items: IEvent[], stripeInstance: any) => {
     console.log(items);
     const lineItems = [];
     for (const item of items) {
-        /*product_data: {
-                    name: item.title,
-                    images: [item.image],
-                    price_data: {
-                currency: 'eur',
-                product: item.stripe_id,
-                unit_amount: item.ticketInfo.price * 100,
-            },
-                },*/
-        const product = await stripeInstance.products.retrieve(item.stripe_id)
+        const product = await stripeInstance.products.retrieve(item.stripe_id, {
+            stripeAccount: item.organizer_stripe_id,
+        });
         lineItems.push({
             price: product.default_price,
             quantity: 1,
         });
     }
-    return lineItems;
+    return lineItems
 }
 
-const createProduct = async (items: IEvent) => {
+const createProduct = async (items: IEvent, organizer_id: string) => {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+    const organizer = await UserModel.findOne({_id: new Types.ObjectId(organizer_id)});
+    if (!organizer) {
+        throw new Error("Organizer not found");
+    }
+    console.log(organizer)
+    const account = await stripe.accounts.retrieve(organizer.stripe_id)
+    console.log(account)
     const product = await stripe.products.create({
         name: items.title,
         description: items.description,
@@ -80,8 +128,14 @@ const createProduct = async (items: IEvent) => {
             currency: 'eur',
             unit_amount: items.ticketInfo.price * 100,
         },
+        metadata: {
+            organizer: items.organizer,
+            organizer_stripe_id: account.id,
+        },
+    }, {
+        stripeAccount: account.id,
     });
-    return product;
+    return {product: product, account: account};
 }
 
 const checkoutSession = async (req: Request, res: Response) => {
@@ -98,13 +152,17 @@ const checkoutSession = async (req: Request, res: Response) => {
             }
             eventArray.push(event);
         }
+        //ToDo: somehow get the organizer stripe id from the event
         const lineItems = await createLineItems(eventArray, stripe);
+        //This will break if the events are from different organizers
         const session = await stripe.checkout.sessions.create({
             payment_method_types: ['card', 'paypal'],
             mode: 'payment',
             line_items: lineItems,
             success_url: `http://${baseUrl}/success`,
             cancel_url: `https://${baseUrl}/cancel`,
+        }, {
+            stripeAccount: eventArray[0].organizer_stripe_id,
         })
         res.status(200).send({url: session.url})
     } catch
@@ -113,4 +171,4 @@ const checkoutSession = async (req: Request, res: Response) => {
     }
 }
 
-export default {paymentIntent, checkoutSession, test, createProduct};
+export default {paymentIntent, checkoutSession, test, createProduct, createCustomer, createAccount};
