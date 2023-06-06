@@ -183,6 +183,9 @@ const getOrderHistory = async (req: Request, res: Response) => {
     const user_id = req.params.user_id;
     console.log(req.params);
     try {
+        if(!user_id) {
+            return res.status(400).json({msg: 'no user id'});
+        }
         const user = await UserModel.findById(user_id).select('-password');
         if (!user) {
             console.log('User not found')

@@ -207,7 +207,7 @@ const checkoutSession = async (req: Request, res: Response) => {
             cancel_url: `https://${baseUrl}/cancel`,
         })
 
-        if (user.checkout_session_id) {
+        /*if (user.checkout_session_id) {
             user.checkout_session_id.push(session.id);
             await user.save();
         } else {
@@ -216,7 +216,7 @@ const checkoutSession = async (req: Request, res: Response) => {
             }).catch((error) => {
                 console.log(error);
             })
-        }
+        }*/
 
         res.status(200).send({url: session.url})
     } catch (error) {
