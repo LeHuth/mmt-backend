@@ -6,4 +6,9 @@ const router = express.Router();
 router.post('/create-payment-intent', paymentController.paymentIntent);
 
 router.post('/create-checkout-session', paymentController.checkoutSession);
+
+//router.post('/webhook', paymentController.webhook);
+
+router.get('/get-charges/:stripe_id', paymentController.getCharges);
+
 export default router;

@@ -2,6 +2,7 @@ import {Bucket, Storage} from "@google-cloud/storage";
 import UserModel from "./endpoints/User/UserModel";
 import bcrypt from "bcryptjs";
 import process from "process";
+import paymentController from "./endpoints/Payment/PaymentController";
 
 
 export const createDefaultAdmin = async () => {
@@ -45,11 +46,15 @@ export const createDefaultOrganizer = async () => {
 }
 
 export const createDefaultUser = async () => {
-    UserModel.findOne({username: 'user'}).then((user) => {
+    UserModel.findOne({username: 'user'}).then(async (user) => {
         if (!user) {
             const hashedPassword = bcrypt.hashSync('user', 10);
+            const data = await paymentController.createCustomer('user@mail.de', 'default', 'user', );
             UserModel.create({
                 username: 'user',
+                fist_name: 'default',
+                last_name: 'user',
+                stripe_id: data.id,
                 email: 'user@mail.de',
                 password: hashedPassword,
                 isAdmin: false,
