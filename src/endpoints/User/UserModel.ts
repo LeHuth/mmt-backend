@@ -9,6 +9,7 @@ export interface IUser{
     password?: string;
     isAdmin: boolean;
     isOrganizer: boolean;
+    isVerified: boolean;
     stripe_id: string;
     checkout_session_id?: string[];
 }
@@ -19,7 +20,7 @@ interface IUserMethods {
 }
 // basic user schema, extend this for more complex users
 const userSchema = new Schema<IUser> ({
-    username: { type: String, unique: true, required: false },
+    username: { type: String, unique: false, required: false },
     fist_name: { type: String, required: true },
     last_name: { type: String, required: true },
     email: {type: String, unique:true, required: true },
@@ -27,6 +28,7 @@ const userSchema = new Schema<IUser> ({
     isAdmin: {type: Boolean, required: true, default: false },
     isOrganizer: {type: Boolean, required: true, default: false },
     stripe_id: {type: String, required: true},
+    isVerified: {type: Boolean, default: false},
     checkout_session_id: {type: [String], required: false, default: []}
 })
 

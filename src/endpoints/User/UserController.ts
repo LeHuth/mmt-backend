@@ -5,6 +5,11 @@ import UserModel from './UserModel';
 import * as process from "process";
 import paymentController from "../Payment/PaymentController";
 import {Types} from "mongoose";
+// @ts-ignore
+import nodemailer from 'nodemailer';
+// @ts-ignore
+import formData from 'form-data';
+import Mailgun from "mailgun.js";
 
 const registration = async (req: Request, res: Response) => {
     const {username, email, password, isAdmin, isOrganizer, first_name, last_name, base_url} = req.body;
@@ -16,10 +21,10 @@ const registration = async (req: Request, res: Response) => {
 
     //prüfen ob daten korrekt
     //TODO: expresss-validator nutzen
-    const validEmail = /^[\w.-]+@[a-zA-Z0-9]+\.[a-zA-Z]{2,}$/i;
-    if (!validEmail.test(email)) {
-        return res.status(400).json({message: "Invalid Email address"});
-    }
+    //const validEmail = /^[\w.-]+@[a-zA-Z0-9]+\.[a-zA-Z]{2,}$/i;
+    //if (!validEmail.test(email)) {
+     //   return res.status(400).json({message: "Invalid Email address"});
+    //}
 
     //Email unique
     if (await UserModel.findOne({email})) {
@@ -31,6 +36,7 @@ const registration = async (req: Request, res: Response) => {
     //paswort hashen
     const hashedPassword = await bcrypt.hash(password, 10);
     if (isOrganizer) {
+        return res.status(400).json({message: "Organizer registration is not yet implemented"});
         const data = await paymentController.createAccount(email, first_name, last_name, base_url);
         UserModel.create({
             fist_name: first_name,
@@ -48,27 +54,42 @@ const registration = async (req: Request, res: Response) => {
         });
 
     } else {
-        const data = await paymentController.createCustomer(email, first_name, last_name,);
+        //const data = await paymentController.createCustomer(email, first_name, last_name,);
         //user erstellen und in db speichern,
         UserModel.create({
+            username: first_name + "-" + last_name,
             fist_name: first_name,
             last_name: last_name,
             email: email,
             isAdmin: isAdmin,
             isOrganizer: isOrganizer,
             password: hashedPassword,
-            stripe_id: data.id
+            isVerified: false,
+            stripe_id: 'not-verified'
         })
-            .then((user) => {
-                res.status(201).json({
-                    _id: user._id,
-                    fist_name: user.fist_name,
-                    last_name: user.last_name,
-                    email: user.email,
-                    isAdmin: user.isAdmin,
-                    isOrganizer: user.isOrganizer,
-                    stripe_id: user.stripe_id
+            .then(async (user) => {
+                //const token = jwt.sign(payload, process.env.JWT_SECRET, {expiresIn: '1h'});
+                const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET as string, { expiresIn: '15m' });
+
+                const transporter = nodemailer.createTransport({
+                    host: "live.smtp.mailtrap.io",
+                    port: 25,
+                    auth: {
+                        user: "api",
+                        pass: "c6b9c57cf8a6436f5211413838b3f6df"
+                    }
                 });
+
+                // send mail with defined transport object
+                const info = await transporter.sendMail({
+                    from: 'signup@mapmytickets.de', // sender address
+                    to: "bht.playtest@gmail.com", // list of receivers
+                    subject: "Account Verification", // Subject line
+                    text: 'Please verify your account by clicking the link: \nhttp://' + req.headers.host + '/users/confirmation/' + token + '.\n', // plain text body
+                    //html: "<b>Hello world!</b>", // html body
+                }, );
+
+                res.status(201).json({msg: 'User created, please verify your email'});
             }).catch((error) => {
             console.error(error);
             res.status(500).json({error: "Error creating user"});
@@ -83,9 +104,16 @@ const login = async (req: Request, res: Response) => {
     try {
         // Authenticate user
         const user = await UserModel.findOne({email});
+
+
         if (!user || !user.password) {
             console.log('User not found');
             return res.status(400).json({msg: 'Invalid email or password'});
+        }
+
+        if (!user.isVerified) {
+            console.log('User not verified');
+            return res.status(400).json({msg: 'Please verify your email'});
         }
 
         const isMatch = await bcrypt.compare(password, user.password);
@@ -217,5 +245,50 @@ const getOrderHistory = async (req: Request, res: Response) => {
     }
 }
 
-export default {registration, login, getUserById, deleteUserById ,getOrderHistory};
+const sendMail = async (req: Request, res: Response) => {
+
+    // create reusable transporter object using the default SMTP transport
+    const transporter = nodemailer.createTransport({
+        host: "live.smtp.mailtrap.io",
+        port: 25,
+        auth: {
+            user: "api",
+            pass: process.env.MAILTRAP_API_KEY
+        }
+    });
+
+    // send mail with defined transport object
+    const info = await transporter.sendMail({
+        from: 'signup@mapmytickets.de', // sender address
+        to: "bht.playtest@gmail.com", // list of receivers
+        subject: "Account Verification", // Subject line
+        text: 'Please verify your account by clicking the link: \nhttp://' + req.headers.host + '/users/confirmation/' + 'my-token' + '.\n',
+    }, );
+    return res.status(200).send({msg: info.response});
+
+}
+
+const confirmation = async (req: Request, res: Response) => {
+    try {
+        // @ts-ignore
+        const { userId } = jwt.verify(req.params.token, process.env.JWT_SECRET as string);
+
+        // Look for the user and update the isVerified field
+        await UserModel.updateOne({ _id: userId }, { isVerified: true });
+
+        const user = await UserModel.findById(userId).select('-password');
+        if (!user) {
+            return res.status(404).json({msg: 'User not found'});
+        }
+        const data = await paymentController.createCustomer(user.email, user.fist_name, user.last_name);
+        user.stripe_id = data.id;
+        await user.save();
+
+        res.status(200).send('Your account has been successfully verified');
+    } catch (error) {
+        res.send('Invalid or expired token');
+    }
+}
+
+export default {registration, login, getUserById, deleteUserById ,getOrderHistory, sendMail, confirmation};
 

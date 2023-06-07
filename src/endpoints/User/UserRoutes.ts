@@ -17,4 +17,8 @@ router.delete('/user/delete/:id', UserController.deleteUserById);
 
 router.get('/get-order-history/:user_id', UserController.getOrderHistory);
 
+router.post('/send-mail', UserController.sendMail);
+
+router.get('/confirmation/:token', UserController.confirmation);
+
 export default router;
