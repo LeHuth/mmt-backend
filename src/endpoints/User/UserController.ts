@@ -76,19 +76,19 @@ const registration = async (req: Request, res: Response) => {
                     port: 25,
                     auth: {
                         user: "api",
-                        pass: "c6b9c57cf8a6436f5211413838b3f6df"
+                        pass: process.env.MAILTRAP_API_KEY
                     }
                 });
 
                 // send mail with defined transport object
                 const info = await transporter.sendMail({
                     from: 'signup@mapmytickets.de', // sender address
-                    to: "bht.playtest@gmail.com", // list of receivers
+                    to: [user.email], // list of receivers
                     subject: "Account Verification", // Subject line
-                    text: 'Please verify your account by clicking the link: \n https://api.mapmytickets.de/users/confirmation/' + token + '.\n', // plain text body
+                    text: 'Please verify your account by clicking the link: https://api.mapmytickets.de/users/confirmation/' + token + '\n', // plain text body
                     //html: "<b>Hello world!</b>", // html body
-                }, );
-
+                });
+                console.log("Message sent: %s", info.messageId);
                 res.status(201).json({msg: 'User created, please verify your email'});
             }).catch((error) => {
             console.error(error);
