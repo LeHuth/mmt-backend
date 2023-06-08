@@ -85,7 +85,7 @@ const registration = async (req: Request, res: Response) => {
                     from: 'signup@mapmytickets.de', // sender address
                     to: "bht.playtest@gmail.com", // list of receivers
                     subject: "Account Verification", // Subject line
-                    text: 'Please verify your account by clicking the link: \n' + process.env.BASE_URL + '/users/confirmation/' + token + '.\n', // plain text body
+                    text: 'Please verify your account by clicking the link: \n https://api.mapmytickets.de/users/confirmation/' + token + '.\n', // plain text body
                     //html: "<b>Hello world!</b>", // html body
                 }, );
 
