@@ -73,7 +73,7 @@ const registration = async (req: Request, res: Response) => {
 
                 const transporter = nodemailer.createTransport({
                     host: "live.smtp.mailtrap.io",
-                    port: 25,
+                    port: 465,
                     auth: {
                         user: "api",
                         pass: process.env.MAILTRAP_API_KEY
