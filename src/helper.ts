@@ -10,11 +10,15 @@ export const createDefaultAdmin = async () => {
     if (!adminUser) {
         const hashedPassword = await bcrypt.hash('admin', 10);
         await UserModel.create({
-            username: 'admin',
+            username: 'default-admin',
+            fist_name: 'default',
+            last_name: 'admin',
             email: 'admin@mail.de',
             password: hashedPassword,
             isAdmin: true,
-            isOrganizer: true
+            isOrganizer: true,
+            isVerified: true,
+            stripe_id: 'not-set'
         }).then(() => {
             console.log('Admin user created');
         }).catch((error) => {
@@ -30,11 +34,15 @@ export const createDefaultOrganizer = async () => {
     if (!organizerUser) {
         const hashedPassword = await bcrypt.hash('organizer', 10);
         await UserModel.create({
-            username: 'organizer',
+            username: 'default-organizer',
+            fist_name: 'default',
+            last_name: 'organizer',
             email: 'organizer@mail.de',
             password: hashedPassword,
             isAdmin: false,
-            isOrganizer: true
+            isOrganizer: true,
+            isVerified: true,
+            stripe_id: 'not-set'
         }).then(() => {
             console.log('Organizer user created');
         }).catch((error) => {
@@ -49,16 +57,17 @@ export const createDefaultUser = async () => {
     UserModel.findOne({username: 'user'}).then(async (user) => {
         if (!user) {
             const hashedPassword = bcrypt.hashSync('user', 10);
-            const data = await paymentController.createCustomer('user@mail.de', 'default', 'user', );
+            //const data = await paymentController.createCustomer('user@mail.de', 'default', 'user', );
             UserModel.create({
-                username: 'user',
+                username: 'default-user',
                 fist_name: 'default',
                 last_name: 'user',
-                stripe_id: data.id,
+                stripe_id: 'cus_O117kBvHkngvcG',
                 email: 'user@mail.de',
                 password: hashedPassword,
                 isAdmin: false,
-                isOrganizer: false
+                isOrganizer: false,
+                isVerified: true,
             }).then(() => {
                 console.log('User created');
             }).catch((error) => {
