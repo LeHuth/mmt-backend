@@ -78,7 +78,6 @@ const deleteById = (req: Request, res: Response) => {
 const filter = (req: Request, res: Response) => {
     //get query params
     const {title, description} = req.query;
-
     interface Filter {
         title?: { $regex: string, $options: string },
         description?: { $regex: string, $options: string },
@@ -99,7 +98,7 @@ const filter = (req: Request, res: Response) => {
     if (description) {
         filter.description = {$regex: description as string, $options: "i"};
     }
-    EventModel.find(filter).then((data) => {
+    EventModel.find(filter).select('title').then((data) => {
 
         return res.status(200).json(data);
     }).catch((err) => {

@@ -280,6 +280,9 @@ const confirmation = async (req: Request, res: Response) => {
         if (!user) {
             return res.status(404).json({msg: 'User not found'});
         }
+        if(user.isVerified) {
+            return res.status(200).send('Your account has been successfully verified');
+        }
         const data = await paymentController.createCustomer(user.email, user.fist_name, user.last_name);
         user.stripe_id = data.id;
         await user.save();
