@@ -6,7 +6,7 @@ import paymentController from "./endpoints/Payment/PaymentController";
 
 
 export const createDefaultAdmin = async () => {
-    const adminUser = await UserModel.findOne({username: 'admin'});
+    const adminUser = await UserModel.findOne({email: 'admin@mail.de'});
     if (!adminUser) {
         const hashedPassword = await bcrypt.hash('admin', 10);
         await UserModel.create({
@@ -30,7 +30,7 @@ export const createDefaultAdmin = async () => {
 }
 
 export const createDefaultOrganizer = async () => {
-    const organizerUser = await UserModel.findOne({username: 'organizer'});
+    const organizerUser = await UserModel.findOne({email: 'organizer@mail.de'});
     if (!organizerUser) {
         const hashedPassword = await bcrypt.hash('organizer', 10);
         await UserModel.create({
@@ -54,7 +54,7 @@ export const createDefaultOrganizer = async () => {
 }
 
 export const createDefaultUser = async () => {
-    UserModel.findOne({username: 'user'}).then(async (user) => {
+    UserModel.findOne({email: 'user@mail.de'}).then(async (user) => {
         if (!user) {
             const hashedPassword = bcrypt.hashSync('user', 10);
             //const data = await paymentController.createCustomer('user@mail.de', 'default', 'user', );

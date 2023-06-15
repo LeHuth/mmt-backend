@@ -11,7 +11,7 @@ router.get('/', EventLocationController.getAll);
 router.get('/:id', EventLocationController.getById);
 
 // create new event location
-router.post('/', EventLocationController.create);
+router.post('/create', EventLocationController.create);
 
 // update event location
 router.put('/:id', EventLocationController.update);
