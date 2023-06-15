@@ -40,6 +40,8 @@ const eventSchema = new Schema<IEvent>({
     available: {type: Number, required: true}
 })
 
+
+
 const EventModel = model<IEvent>("EventModel", eventSchema)
 
 export default EventModel;

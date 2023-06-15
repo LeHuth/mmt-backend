@@ -1,5 +1,5 @@
 import {model, Schema} from 'mongoose';
-
+import axios from "axios";
 export interface IAddress {
     street: string;
     houseNumber: string;
@@ -55,6 +55,24 @@ const eventSchema = new Schema<IEventLocation>({
     },
     description: {type: String, required: false}
 })
+
+eventSchema.methods.computeLocation = async function(address : IAddress): Promise<void> {
+
+    const url = "https://nominatim.openstreetmap.org/search?format=json&street=" + address.street + "+" + address.houseNumber + "&city=" + address.city + "&country=" + address.country + "&postalcode=" + address.zipCode;
+    const response = await axios.get(url);
+    const data = response.data;
+    if(data.length > 0){
+        this.location = {
+            latitude: parseFloat(data[0].lat),
+            longitude: parseFloat(data[0].lon)
+        }
+    } else{
+        this.location = {
+            latitude: 0,
+            longitude: 0
+        }
+    }
+}
 
 const EventLocationModel = model<IEventLocation>("EventLocation", eventSchema)
 
