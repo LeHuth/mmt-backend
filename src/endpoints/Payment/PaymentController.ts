@@ -14,7 +14,7 @@ const calculateOrderAmount = (items: IEvent[]) => {
             if (!event) {
                 throw new Error("Event not found");
             }
-            sum += event.ticketInfo.price;
+            sum += event.price;
         });
     }
     return 1400;
@@ -129,7 +129,7 @@ const createProduct = async (items: IEvent, organizer_id: string) => {
         images: [items.image],
         default_price_data: {
             currency: 'eur',
-            unit_amount: items.ticketInfo.price * 100,
+            unit_amount: items.price * 100,
         },
         metadata: {
             organizer: items.organizer,
