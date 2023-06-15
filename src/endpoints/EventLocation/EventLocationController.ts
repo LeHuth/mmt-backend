@@ -3,8 +3,9 @@ import EventLocationModel from './EventLocationModel';
 
 const create = async (req: Request, res: Response) => {
     try {
-        const data = await EventLocationModel.create(req.body);
-        return res.status(201).json(data);
+        let eventLocation = new EventLocationModel(req.body);
+        eventLocation = await eventLocation.save();
+        return res.status(201).json(eventLocation);
     } catch (err) {
         const message = err instanceof Error ? err.message : 'An unexpected error occurred.';
         return res.status(500).json({message});
