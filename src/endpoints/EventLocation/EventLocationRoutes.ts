@@ -11,10 +11,10 @@ router.get('/', EventLocationController.getAll);
 router.get('/:id', EventLocationController.getById);
 
 // create new event location
-router.post('/', eventLocationValidationRules, validateRequest, EventLocationController.create);
+router.post('/', EventLocationController.create);
 
 // update event location
-router.put('/:id', eventLocationValidationRules, validateRequest, EventLocationController.update);
+router.put('/:id', EventLocationController.update);
 
 // delete event location
 router.delete('/:id', EventLocationController.deleteById);

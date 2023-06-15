@@ -24,12 +24,6 @@ router.put('/user/:id', UserController.updateUser);
 // Route für das Löschen eines Benutzers
 router.delete('/user/:id', UserController.deleteUser);
 
-// GET /users/get/:id
-router.get('/user/get/:id', UserController.getUserById);
-
-// DELETE /users/delete/:id
-router.delete('/user/delete/:id', UserController.deleteUserById);
-
 router.get('/get-order-history/:user_id', UserController.getOrderHistory);
 
 router.post('/send-mail', UserController.sendMail);

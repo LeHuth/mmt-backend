@@ -293,7 +293,6 @@ const confirmation = async (req: Request, res: Response) => {
     }
 }
 
-export default {registration, login, getUserById, deleteUserById ,getOrderHistory, sendMail, confirmation};
 const getUser = async (req: Request, res: Response) => {
     const id = req.params.id;
 
@@ -403,12 +402,6 @@ const updateUser = async (req: Request, res: Response) => {
         return res.status(400).json({ message: "Admin must be a boolean" });
     }
 
-    //Username unique
-    const existingUser = await UserModel.findOne({username});
-    if(existingUser && String(existingUser._id) !== id){
-       return res.status(400).json({ message: "Username is already taken" });
-    }
-
     //Email unique
     const existingEmail = await UserModel.findOne({email});
     if (existingEmail && String(existingEmail._id) !== id){
@@ -452,4 +445,4 @@ const deleteUser = async (req: Request, res: Response) => {
         });
 }
 
-export default { registration, login, getUser, getUsers, createUser, updateUser, deleteUser }
+export default { registration, login, getUser, getUsers, createUser, updateUser, deleteUser, getOrderHistory, sendMail, confirmation };
