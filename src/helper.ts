@@ -120,28 +120,54 @@ async function makeBucketPublic(gcBucket: any) {
 }
 
 
-export const uploadImage = (image: string, imageName: string) => new Promise((resolve, reject) => {
-    if (!image) {
+export const uploadImage = (image: string, imageName: string, imageArray: object[]) => new Promise((resolve, reject) => {
+    if (!imageArray) {
         return reject("No image provided");
     }
-    const base64EncodedImageString = image.split(';base64,').pop();
-
-    if (!base64EncodedImageString) {
-        return reject("No base64 encoded image string provided");
+    interface ImageObject {
+        data: string;
+        name: string;
     }
-    const imageBuffer = Buffer.from(base64EncodedImageString, 'base64');
-    const mmtbucket = setupGoogleStorageConnection();
-    makeBucketPublic(mmtbucket);
-    const blob = mmtbucket.file(imageName);
-    const blobStream = blob.createWriteStream({
-        resumable: false,
-    });
-    blobStream.on('finish', () => {
-        const publicUrl = `https://storage.googleapis.com/${mmtbucket.name}/${blob.name}`;
-        return resolve(publicUrl);
-    });
-    blobStream.end(imageBuffer);
+    const imageUrls: string[] = [];
+    imageArray.forEach((imgobj) => {
+        const myimage: ImageObject = imgobj as ImageObject;
+        const base64EncodedImageString = myimage.data.split(';base64,').pop();
+        if (!base64EncodedImageString) {
+            return reject("No base64 encoded image string provided");
+        }
+        const imageBuffer = Buffer.from(base64EncodedImageString, 'base64');
+        const mmtbucket = setupGoogleStorageConnection();
+        makeBucketPublic(mmtbucket);
+        const blob = mmtbucket.file(myimage.name);
+        const blobStream = blob.createWriteStream({
+            resumable: false,
+        });
+        blobStream.on('finish', () => {
+            const publicUrl = `https://storage.googleapis.com/${mmtbucket.name}/${blob.name}`;
+            imageUrls.push(publicUrl);
+        });
+        blobStream.end(imageBuffer);
+    })
+    return resolve(imageUrls);
 })
+
+/*const base64EncodedImageString = image.split(';base64,').pop();
+
+if (!base64EncodedImageString) {
+    return reject("No base64 encoded image string provided");
+}
+const imageBuffer = Buffer.from(base64EncodedImageString, 'base64');
+const mmtbucket = setupGoogleStorageConnection();
+makeBucketPublic(mmtbucket);
+const blob = mmtbucket.file(imageName);
+const blobStream = blob.createWriteStream({
+    resumable: false,
+});
+blobStream.on('finish', () => {
+    const publicUrl = `https://storage.googleapis.com/${mmtbucket.name}/${blob.name}`;
+    return resolve(publicUrl);
+});
+blobStream.end(imageBuffer);*/
 /*
 app.post("/api/upload", (req: Request, res: Response) => {
 

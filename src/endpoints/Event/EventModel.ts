@@ -1,41 +1,41 @@
 import {model , Schema} from 'mongoose';
 
 
-export interface ISchedule {
+export interface IHappening {
     date: Date;
     time: string;
-    location_id: string;
+    place: string;
 }
 
 export interface IEvent {
     _id?: string;
     stripe_id?: string;
     organizer_stripe_id?: string;
-    title: string;
+    name: string;
     quip?: string;
     description: string;
-    schedule?: ISchedule[];
+    happenings?: IHappening[];
     tags: string[];
     organizer: string;
-    image: string;
+    images: string[];
     price: number;
     available: number;
 }
 
 const eventSchema = new Schema<IEvent>({
-    title: {type: String, required: true},
-    stripe_id: {type: String, required: true},
-    organizer_stripe_id: {type: String, required: true},
+    name: {type: String, required: true},
+    stripe_id: {type: String, default: 'not-set'},
+    organizer_stripe_id: {type: String, default: 'not-set'},
     quip: {type: String, required: false},
     description: {type: String, required: true},
-    schedule: [{
+    happenings: [{
         date: {type: Date, required: true},
         time: {type: String, required: true},
-        location_id: {type: String, required: true}
+        place: {type: String, required: true}
     }],
     tags: {type: [String], required: true},
     organizer: {type: String, required: true},
-    image: {type: String, required: true},
+    images: {type: [String], required: true},
     price: {type: Number, required: true},
     available: {type: Number, required: true}
 })

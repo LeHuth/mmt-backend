@@ -27,13 +27,15 @@ export const authenticateJWT = (
                     // @ts-ignore
                     UserModel.findById(decoded.user.id).then((user) => {
                         if (!user) {
-                            return next(new Error('User not found'));
+                            return res.status(401).send({error: `Access denied.`});
+                            /*return next(new Error('User not found'));*/
                         }
                         req.user = user;
                         next();
                     });
                 } else {
-                    next(new Error('Invalid token data'));
+                    return res.status(401).send({error: `Access denied.`});
+                    /*next(new Error('Invalid token data'));*/
                 }
             }
         );

@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import {Request, Response} from 'express';
 import EventLocationModel from './EventLocationModel';
 
 const create = async (req: Request, res: Response) => {
@@ -52,4 +52,25 @@ const deleteById = async (req: Request, res: Response) => {
     }
 }
 
-export default { create, update, getAll, getById, deleteById };
+const filter = async (req: Request, res: Response) => {
+    try {
+        const {name} = req.query;
+
+        interface IFilter {
+            name?: { $regex: string, $options: string }
+        }
+
+        const filter: IFilter = {}
+
+        if (name) {
+            filter.name = {$regex: name as string, $options: "i"};
+        }
+        const data = await EventLocationModel.find(filter).select('name');
+        return res.status(200).json(data);
+    } catch (err) {
+        const message = err instanceof Error ? err.message : 'An unexpected error occurred.';
+        return res.status(500).json({message});
+    }
+}
+
+export default {create, update, getAll, getById, deleteById, filter};

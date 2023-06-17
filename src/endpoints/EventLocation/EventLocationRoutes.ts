@@ -8,15 +8,18 @@ const router = Router();
 router.get('/', EventLocationController.getAll);
 
 // get event location by id
-router.get('/:id', EventLocationController.getById);
+router.get('/get/:id', EventLocationController.getById);
 
 // create new event location
 router.post('/create', EventLocationController.create);
 
 // update event location
-router.put('/:id', EventLocationController.update);
+router.put('/update/:id', EventLocationController.update);
 
 // delete event location
-router.delete('/:id', EventLocationController.deleteById);
+router.delete('/delete/:id', EventLocationController.deleteById);
+
+// filter event locations
+router.get('/filter', EventLocationController.filter);
 
 export default router;

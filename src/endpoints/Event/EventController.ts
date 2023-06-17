@@ -10,11 +10,32 @@ const teapot = (req: Request, res: Response) => {
 };
 
 const create = (req: Request, res: Response) => {
-    const {image, imageName} = req.body;
-    if (!image || !imageName) {
+    console.log('start request')
+    const {image, imageName, images} = req.body;
+    if (!images || images.length === 0) {
         return res.status(400).json({message: "Image and imageName are required"});
     }
-    uploadImage(image, imageName).then((img_url) => {
+    console.log('images present')
+    uploadImage(image, imageName, images).then((img_urls_array) => {
+        console.log('images uploaded')
+        req.body.images = img_urls_array;
+        req.body.happenings = req.body.happenings.map((happening: any) => {
+            happening.place = happening.place._id;
+            return happening;
+        });
+        console.log('happenings mapped')
+        EventModel.create(req.body)
+            .then((data) => {
+                return res.status(201).json(data);
+            })
+            .catch((err) => {
+                return res.status(500).json({message: err.message});
+            });
+    }).catch((err) => {
+        return res.status(500).json({message: err.message});
+    })
+
+    /*uploadImage(image, imageName).then((img_url) => {
         req.body.image = img_url;
         paymentController.createProduct(req.body, req.body.organizer).then((stripe_data) => {
             req.body.stripe_id = stripe_data.product.id;
@@ -31,7 +52,7 @@ const create = (req: Request, res: Response) => {
         });
     }).catch((err) => {
         return res.status(500).json({message: err.message});
-    })
+    })*/
 
     /* TODO: Reimplement image upload
     uploadImage(req.body.image, req.body.imageName)
@@ -77,9 +98,9 @@ const deleteById = (req: Request, res: Response) => {
 
 const filter = (req: Request, res: Response) => {
     //get query params
-    const {title, description} = req.query;
+    const {name, description} = req.query;
     interface Filter {
-        title?: { $regex: string, $options: string },
+        name?: { $regex: string, $options: string },
         description?: { $regex: string, $options: string },
         date?: { $regex: string, $options: string },
         time?: { $regex: string, $options: string },
@@ -92,13 +113,13 @@ const filter = (req: Request, res: Response) => {
 
     const filter: Filter = {};
 
-    if (title) {
-        filter.title = {$regex: title as string, $options: "i"};
+    if (name) {
+        filter.name = {$regex: name as string, $options: "i"};
     }
     if (description) {
         filter.description = {$regex: description as string, $options: "i"};
     }
-    EventModel.find(filter).select('title').then((data) => {
+    EventModel.find(filter).select('name').then((data) => {
 
         return res.status(200).json(data);
     }).catch((err) => {

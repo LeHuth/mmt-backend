@@ -124,9 +124,9 @@ const createProduct = async (items: IEvent, organizer_id: string) => {
     const account = await stripe.accounts.retrieve(organizer.stripe_id)
     console.log(account)
     const product = await stripe.products.create({
-        name: items.title,
+        name: items.name,
         description: items.description,
-        images: [items.image],
+        images: [items.name],
         default_price_data: {
             currency: 'eur',
             unit_amount: items.price * 100,
