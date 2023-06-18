@@ -100,7 +100,7 @@ const filter = (req: Request, res: Response) => {
     //get query params
     const {name, description} = req.query;
     interface Filter {
-        name?: { $regex: string, $options: string },
+        name?: { $regex: string, $options: string },/*
         description?: { $regex: string, $options: string },
         date?: { $regex: string, $options: string },
         time?: { $regex: string, $options: string },
@@ -108,7 +108,7 @@ const filter = (req: Request, res: Response) => {
         category?: { $regex: string, $options: string },
         tags?: { $regex: string, $options: string },
         organizer?: { $regex: string, $options: string },
-        maxParticipants?: { $regex: string, $options: string },
+        maxParticipants?: { $regex: string, $options: string },*/
     }
 
     const filter: Filter = {};
@@ -116,9 +116,8 @@ const filter = (req: Request, res: Response) => {
     if (name) {
         filter.name = {$regex: name as string, $options: "i"};
     }
-    if (description) {
-        filter.description = {$regex: description as string, $options: "i"};
-    }
+
+    console.log(filter);
     EventModel.find(filter).select('name').then((data) => {
 
         return res.status(200).json(data);
