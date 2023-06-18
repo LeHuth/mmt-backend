@@ -124,32 +124,43 @@ export const uploadImage = (image: string, imageName: string, imageArray: object
     if (!imageArray) {
         return reject("No image provided");
     }
+
     interface ImageObject {
         data: string;
         name: string;
     }
+
     const imageUrls: string[] = [];
-    imageArray.forEach((imgobj) => {
-        const myimage: ImageObject = imgobj as ImageObject;
-        const base64EncodedImageString = myimage.data.split(';base64,').pop();
-        if (!base64EncodedImageString) {
-            return reject("No base64 encoded image string provided");
-        }
-        const imageBuffer = Buffer.from(base64EncodedImageString, 'base64');
-        const mmtbucket = setupGoogleStorageConnection();
-        makeBucketPublic(mmtbucket);
-        const blob = mmtbucket.file(myimage.name);
-        const blobStream = blob.createWriteStream({
-            resumable: false,
+
+    const uploadPromises = imageArray.map((imgobj) => {
+        return new Promise<void>((res, rej) => {
+            const myimage: ImageObject = imgobj as ImageObject;
+            const base64EncodedImageString = myimage.data.split(';base64,').pop();
+            if (!base64EncodedImageString) {
+                return rej("No base64 encoded image string provided");
+            }
+            const imageBuffer = Buffer.from(base64EncodedImageString, 'base64');
+            const mmtbucket = setupGoogleStorageConnection();
+            makeBucketPublic(mmtbucket);
+            const blob = mmtbucket.file(myimage.name);
+            const blobStream = blob.createWriteStream({
+                resumable: false,
+            });
+            blobStream.on('error', rej);
+            blobStream.on('finish', () => {
+                const publicUrl = `https://storage.googleapis.com/${mmtbucket.name}/${blob.name}`;
+                imageUrls.push(publicUrl);
+                res();
+            });
+            blobStream.end(imageBuffer);
         });
-        blobStream.on('finish', () => {
-            const publicUrl = `https://storage.googleapis.com/${mmtbucket.name}/${blob.name}`;
-            imageUrls.push(publicUrl);
-        });
-        blobStream.end(imageBuffer);
-    })
-    return resolve(imageUrls);
-})
+    });
+
+    Promise.all(uploadPromises)
+        .then(() => resolve(imageUrls))
+        .catch((error) => reject(error));
+});
+
 
 /*const base64EncodedImageString = image.split(';base64,').pop();
 
