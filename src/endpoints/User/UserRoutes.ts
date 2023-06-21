@@ -30,4 +30,6 @@ router.post('/send-mail', UserController.sendMail);
 
 router.get('/confirmation/:token', UserController.confirmation);
 
+router.get('my/orders', UserController.getMyOrders);
+
 export default router;

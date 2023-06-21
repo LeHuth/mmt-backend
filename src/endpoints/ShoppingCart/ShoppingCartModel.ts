@@ -1,15 +1,21 @@
-import { Schema, model } from "mongoose"
+import {model, Schema} from "mongoose"
 
-interface IShoppingCart{
-    creatorId: string;
-    items: object[];
+export interface IShoppingCartItem {
+    item_id: string;
+    quantity: number;
+    price: number;
+}
+
+interface IShoppingCart {
+    user_id: string;
+    items: IShoppingCartItem[]
     totalPrice: number;
 }
 
-const shoppingCartSchema = new Schema<IShoppingCart> ({
-    creatorId: {type: String, unique: true, required: true},
-    items: {type: [Object]},
-    totalPrice: {type: Number, default: 0}
+const shoppingCartSchema = new Schema<IShoppingCart>({
+    user_id: {type: String, unique: true, required: true},
+    items: {type: [Object], required: false, default: []},
+    totalPrice: {type: Number, required: false, default: 0}
 })
 
 const ShoppingCartModel = model("ShoppingCartModel", shoppingCartSchema)

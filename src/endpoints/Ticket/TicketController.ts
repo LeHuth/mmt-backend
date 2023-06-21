@@ -1,5 +1,6 @@
 import {Request, Response } from "express";
 import TicketModel from "./TicketModel";
+import TicketSaleStatsModel from "./TicketSaleStatsModel";
 import { Document } from "mongoose"
 
 const create = (req: Request, res: Response) => {
@@ -27,6 +28,26 @@ const deleteById = (req:Request, res:Response) => {
     });
 }
 
+const createTicketSaleStats = (event_id:string, totalTickets: number) => {
+    TicketSaleStatsModel.find({event_id: event_id}).then((data) => {
+        if(data.length == 0){
+            TicketSaleStatsModel.create({event_id: event_id, totalTickets: totalTickets}).then((data) => {
+                console.log("Ticket sale stats created for event: " + event_id);
+                return true;
+            }).catch((err) => {
+                console.log(err);
+                return false;
+            })
+        } else {
+            console.log("Ticket sale stats already exists for this event.")
+            return;
+        }
+    }).catch((err) => {
+        console.log(err);
+        return false;
+    })
+}
 
 
-export default { create, get, deleteById };
+
+export default { create, get, deleteById, createTicketSaleStats };

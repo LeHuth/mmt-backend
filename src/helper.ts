@@ -2,7 +2,7 @@ import {Bucket, Storage} from "@google-cloud/storage";
 import UserModel from "./endpoints/User/UserModel";
 import bcrypt from "bcryptjs";
 import process from "process";
-import paymentController from "./endpoints/Payment/PaymentController";
+import jwt from "jsonwebtoken";
 
 
 export const createDefaultAdmin = async () => {
@@ -91,7 +91,7 @@ const setupGoogleStorageConnection = (): Bucket => {
                 // @ts-ignore
                 project_id: tst.project_id,
                 private_key_id: tst.private_key_id,
-                private_key:`-----BEGIN PRIVATE KEY-----\n${tst.private_key}\n-----END PRIVATE KEY-----\n`,
+                private_key: `-----BEGIN PRIVATE KEY-----\n${tst.private_key}\n-----END PRIVATE KEY-----\n`,
                 client_email: tst.client_email,
                 client_id: tst.client_id,
                 auth_uri: 'https://accounts.google.com/o/oauth2/auth',
@@ -111,6 +111,7 @@ const setupGoogleStorageConnection = (): Bucket => {
     }
 
 }
+
 async function makeBucketPublic(gcBucket: any) {
     gcBucket.makePublic().then(() => {
         console.log(`Bucket ${gcBucket.name} is now public.`);
@@ -198,3 +199,22 @@ app.post("/api/upload", (req: Request, res: Response) => {
     blobStream.end(imageBuffer);
 })
 */
+
+
+export const extractUserIdFromToken = (token: string, callback: (err: Error | null, userId: string | null) => void) => {
+    jwt.verify(token, 'YOUR_SECRET_KEY', (err, data) => {
+        const payload = data as IJWTPayload;
+        if (err) {
+            callback(err, null);
+        } else {
+            callback(null, payload.user.id);
+        }
+    });
+}
+
+
+export interface IJWTPayload {
+    user: {
+        id: string;
+    }
+}

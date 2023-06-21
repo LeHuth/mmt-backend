@@ -10,6 +10,8 @@ import nodemailer from 'nodemailer';
 // @ts-ignore
 import formData from 'form-data';
 import Mailgun from "mailgun.js";
+import TicketModel from "../Ticket/TicketModel";
+import {extractUserIdFromToken} from "../../helper";
 
 const registration = async (req: Request, res: Response) => {
     const {username, email, password, isAdmin, isOrganizer, first_name, last_name, base_url} = req.body;
@@ -445,4 +447,25 @@ const deleteUser = async (req: Request, res: Response) => {
         });
 }
 
-export default { registration, login, getUser, getUsers, createUser, updateUser, deleteUser, getOrderHistory, sendMail, confirmation };
+const getMyOrders = (req: Request, res: Response) => {
+    const jwt = req.headers.authorization?.split(" ")[1];
+    if (!jwt) {
+        return res.status(401).send({message: "No token provided"});
+    }
+
+    extractUserIdFromToken(jwt, (err, userId) => {
+        if (err) {
+            return res.status(401).send({message: "Invalid token"});
+        } else {
+            TicketModel.find({owner_id: userId})
+                .then((orders) => {
+                    res.status(200).json({orders: orders});
+                }).catch((error) => {
+                    console.error(error);
+                    res.status(500).json({error: "Error fetching order history"});
+                });
+        }
+    });
+}
+
+export default { registration, login, getUser, getUsers, createUser, updateUser, deleteUser, getOrderHistory, sendMail, confirmation, getMyOrders };
