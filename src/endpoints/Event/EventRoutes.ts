@@ -15,7 +15,7 @@ router.get('/filter', EventController.filter);
 
 
 // create new event
-router.post('/create', eventValidationRules,validateRequest, authenticateJWT, isOrganizer, EventController.create);
+router.post('/create', authenticateJWT, isOrganizer, EventController.create);
 
 // update event
 router.patch('/update/:id', authenticateJWT, canEditEvent, EventController.update);

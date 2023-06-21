@@ -6,15 +6,19 @@ import paymentController from "./endpoints/Payment/PaymentController";
 
 
 export const createDefaultAdmin = async () => {
-    const adminUser = await UserModel.findOne({username: 'admin'});
+    const adminUser = await UserModel.findOne({email: 'admin@mail.de'});
     if (!adminUser) {
         const hashedPassword = await bcrypt.hash('admin', 10);
         await UserModel.create({
-            username: 'admin',
+            username: 'default-admin',
+            fist_name: 'default',
+            last_name: 'admin',
             email: 'admin@mail.de',
             password: hashedPassword,
             isAdmin: true,
-            isOrganizer: true
+            isOrganizer: true,
+            isVerified: true,
+            stripe_id: 'not-set'
         }).then(() => {
             console.log('Admin user created');
         }).catch((error) => {
@@ -26,15 +30,19 @@ export const createDefaultAdmin = async () => {
 }
 
 export const createDefaultOrganizer = async () => {
-    const organizerUser = await UserModel.findOne({username: 'organizer'});
+    const organizerUser = await UserModel.findOne({email: 'organizer@mail.de'});
     if (!organizerUser) {
         const hashedPassword = await bcrypt.hash('organizer', 10);
         await UserModel.create({
-            username: 'organizer',
+            username: 'default-organizer',
+            fist_name: 'default',
+            last_name: 'organizer',
             email: 'organizer@mail.de',
             password: hashedPassword,
             isAdmin: false,
-            isOrganizer: true
+            isOrganizer: true,
+            isVerified: true,
+            stripe_id: 'not-set'
         }).then(() => {
             console.log('Organizer user created');
         }).catch((error) => {
@@ -46,19 +54,20 @@ export const createDefaultOrganizer = async () => {
 }
 
 export const createDefaultUser = async () => {
-    UserModel.findOne({username: 'user'}).then(async (user) => {
+    UserModel.findOne({email: 'user@mail.de'}).then(async (user) => {
         if (!user) {
             const hashedPassword = bcrypt.hashSync('user', 10);
-            const data = await paymentController.createCustomer('user@mail.de', 'default', 'user', );
+            //const data = await paymentController.createCustomer('user@mail.de', 'default', 'user', );
             UserModel.create({
-                username: 'user',
+                username: 'default-user',
                 fist_name: 'default',
                 last_name: 'user',
-                stripe_id: data.id,
+                stripe_id: 'cus_O117kBvHkngvcG',
                 email: 'user@mail.de',
                 password: hashedPassword,
                 isAdmin: false,
-                isOrganizer: false
+                isOrganizer: false,
+                isVerified: true,
             }).then(() => {
                 console.log('User created');
             }).catch((error) => {
@@ -111,28 +120,65 @@ async function makeBucketPublic(gcBucket: any) {
 }
 
 
-export const uploadImage = (image: string, imageName: string) => new Promise((resolve, reject) => {
-    if (!image) {
+export const uploadImage = (image: string, imageName: string, imageArray: object[]) => new Promise((resolve, reject) => {
+    if (!imageArray) {
         return reject("No image provided");
     }
-    const base64EncodedImageString = image.split(';base64,').pop();
 
-    if (!base64EncodedImageString) {
-        return reject("No base64 encoded image string provided");
+    interface ImageObject {
+        data: string;
+        name: string;
     }
-    const imageBuffer = Buffer.from(base64EncodedImageString, 'base64');
-    const mmtbucket = setupGoogleStorageConnection();
-    makeBucketPublic(mmtbucket);
-    const blob = mmtbucket.file(imageName);
-    const blobStream = blob.createWriteStream({
-        resumable: false,
+
+    const imageUrls: string[] = [];
+
+    const uploadPromises = imageArray.map((imgobj) => {
+        return new Promise<void>((res, rej) => {
+            const myimage: ImageObject = imgobj as ImageObject;
+            const base64EncodedImageString = myimage.data.split(';base64,').pop();
+            if (!base64EncodedImageString) {
+                return rej("No base64 encoded image string provided");
+            }
+            const imageBuffer = Buffer.from(base64EncodedImageString, 'base64');
+            const mmtbucket = setupGoogleStorageConnection();
+            makeBucketPublic(mmtbucket);
+            const blob = mmtbucket.file(myimage.name);
+            const blobStream = blob.createWriteStream({
+                resumable: false,
+            });
+            blobStream.on('error', rej);
+            blobStream.on('finish', () => {
+                const publicUrl = `https://storage.googleapis.com/${mmtbucket.name}/${blob.name}`;
+                imageUrls.push(publicUrl);
+                res();
+            });
+            blobStream.end(imageBuffer);
+        });
     });
-    blobStream.on('finish', () => {
-        const publicUrl = `https://storage.googleapis.com/${mmtbucket.name}/${blob.name}`;
-        return resolve(publicUrl);
-    });
-    blobStream.end(imageBuffer);
-})
+
+    Promise.all(uploadPromises)
+        .then(() => resolve(imageUrls))
+        .catch((error) => reject(error));
+});
+
+
+/*const base64EncodedImageString = image.split(';base64,').pop();
+
+if (!base64EncodedImageString) {
+    return reject("No base64 encoded image string provided");
+}
+const imageBuffer = Buffer.from(base64EncodedImageString, 'base64');
+const mmtbucket = setupGoogleStorageConnection();
+makeBucketPublic(mmtbucket);
+const blob = mmtbucket.file(imageName);
+const blobStream = blob.createWriteStream({
+    resumable: false,
+});
+blobStream.on('finish', () => {
+    const publicUrl = `https://storage.googleapis.com/${mmtbucket.name}/${blob.name}`;
+    return resolve(publicUrl);
+});
+blobStream.end(imageBuffer);*/
 /*
 app.post("/api/upload", (req: Request, res: Response) => {
 

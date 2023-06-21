@@ -9,11 +9,20 @@ router.post("/user/signup", UserController.registration);
 // POST /users/login
 router.post('/user/login', UserController.login);
 
-// GET /users/get/:id
-router.get('/user/get/:id', UserController.getUserById);
+// Route für das Abrufen eines einzelnen Benutzers
+router.get('/user/:id', UserController.getUser);
 
-// DELETE /users/delete/:id
-router.delete('/user/delete/:id', UserController.deleteUserById);
+// Route für das Abrufen aller Benutzer
+router.get('/users', UserController.getUsers);
+
+// Route für das Erstellen eines Benutzers
+router.post('/user', UserController.createUser);
+
+// Route für das Aktualisieren eines Benutzers
+router.put('/user/:id', UserController.updateUser);
+
+// Route für das Löschen eines Benutzers
+router.delete('/user/:id', UserController.deleteUser);
 
 router.get('/get-order-history/:user_id', UserController.getOrderHistory);
 
