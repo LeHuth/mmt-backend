@@ -12,5 +12,7 @@ router.get("/get/:id", TicketController.get);
 //delete ticket
 router.delete("/delete/:id", TicketController.deleteById);
 
+//validate ticket
+router.post("/validate/:uuid", TicketController.validate);
 
 export default router;
