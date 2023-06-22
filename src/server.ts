@@ -4,7 +4,7 @@ import dotenv from "dotenv";
 import cors from "cors";
 import * as process from "process";
 import router from "./routes";
-import {createDefaultAdmin, createDefaultOrganizer, createDefaultUser} from "./helper";
+import {createDefaultAdmin, createDefaultOrganizer, createDefaultTicket, createDefaultUser} from "./helper";
 // @ts-ignore
 import swaggerUi from 'swagger-ui-express';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -32,6 +32,7 @@ try {
     await createDefaultAdmin();
     await createDefaultOrganizer();
     await createDefaultUser();
+    await createDefaultTicket();
 
 } catch (error) {
     console.error('Error connecting to MongoDB:', error);
