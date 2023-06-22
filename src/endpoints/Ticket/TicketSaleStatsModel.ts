@@ -1,5 +1,13 @@
 import mongoose from "mongoose";
-export type TICKET_STATUS = "pending" | "fulfilled" | "cancelled";
+
+export const TicketStatus = {
+    PENDING: "pending" as const,
+    FULFILLED: "fulfilled" as const,
+    CANCELED: "cancelled" as const
+}
+// And also create a type from it:
+export type TICKET_STATUS = typeof TicketStatus[keyof typeof TicketStatus];
+
 export interface ITicketSale {
     _id: string;
     event_id: string;

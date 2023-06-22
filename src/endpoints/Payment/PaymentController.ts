@@ -4,6 +4,11 @@ import UserModel from "../User/UserModel";
 import process from "process";
 import {Types} from "mongoose";
 import jwt from "jsonwebtoken";
+import {IJWTPayload} from "../../helper";
+import {getTokenAndDecode} from "../ShoppingCart/ShoppingCartController";
+import ShoppingCartModel from "../ShoppingCart/ShoppingCartModel";
+import TicketModel from "../Ticket/TicketModel";
+import {TicketStatus} from "../Ticket/TicketSaleStatsModel";
 
 const calculateOrderAmount = (items: IEvent[]) => {
     let sum = 0;
@@ -141,12 +146,12 @@ const createProduct = async (items: IEvent, organizer_id: string) => {
     return {product: product, account: account};
 }
 
-const calcTotalAmount = async (lineItems: object[], stripe:any) => {
+const calcTotalAmount = async (lineItems: object[], stripe: any) => {
     let returnAmount = 0;
     for (const item of lineItems) {
         // @ts-ignore
         const price = await stripe.prices.retrieve(item.price);
-        if(price){
+        if (price) {
             console.log('price ', price)
             returnAmount += price.unit_amount;
         }
@@ -242,9 +247,6 @@ const getCharges = async (req: Request, res: Response) => {
     });
 
 
-
-
-
     const charges = await stripe.charges.list({
         limit: 3,
         payment_intent: paymentIntents.data[0].id,
@@ -252,4 +254,106 @@ const getCharges = async (req: Request, res: Response) => {
     res.status(200).send({charges: paymentIntents});
 }
 
-export default {paymentIntent, checkoutSession, test, createProduct, createCustomer, createAccount, getCharges};
+const checkIfEventIsAvailable = async (event_id: string, amount: number) => {
+    const result = await EventModel.find({_id: event_id})
+    const event = result[0] as IEvent;
+    return !(!event || event.available - amount < 0);
+}
+
+const createTickets = async (items: { event_id: string, amount: number }[], user_id: string) => {
+    const tickets = [];
+    for (const item of items) {
+        const Event = await EventModel.findById(item.event_id);
+        if (!Event) {
+            continue;
+        }
+
+        for (let i = 0; i < item.amount; i++) {
+            const ticket = await new TicketModel({
+                name: Event.name,
+                event_id: item.event_id,
+                owner_id: user_id,
+                price: Event.price,
+                date: Event.happenings[0].date,
+                location_id: Event.happenings[0].place,
+                isUsed: false,
+                status: TicketStatus.PENDING,
+
+            });
+            await ticket.save();
+            tickets.push(ticket);
+        }
+    }
+
+    return tickets;
+}
+
+const checkout = async (req: Request, res: Response) => {
+    const decoded = await getTokenAndDecode(req, res);
+    if (!decoded) {
+        return res.status(401).json({message: "Invalid credentials"});
+    }
+
+    const user_id = (decoded as IJWTPayload).user.id;
+
+    const shoppingCart = await ShoppingCartModel.findOne({user_id: user_id});
+
+    if (!shoppingCart) {
+        return res.status(404).json({message: "Shopping cart not found"});
+    }
+
+    // step 1: check if all the items in the shopping cart are still available
+    const items = shoppingCart.items;
+    for (const item of items) {
+        const available = await checkIfEventIsAvailable(item.event_id, item.amount);
+        if (!available) {
+            return res.status(400).json({message: "Not enough tickets available"});
+        }
+    }
+
+    // step 2: create Tickets from the shopping cart
+    const tickets = await createTickets(items, user_id);
+
+    return res.status(200).json({tickets: tickets});
+
+}
+
+const prepareCheckout = async (req: Request, res: Response) => {
+    const decoded = await getTokenAndDecode(req, res);
+    if (!decoded) {
+        return res.status(401).json({message: "Invalid credentials"});
+    }
+
+    const user_id = (decoded as IJWTPayload).user.id;
+
+    const shoppingCart = await ShoppingCartModel.findOne({user_id: user_id});
+
+    if (!shoppingCart) {
+        return res.status(404).json({message: "Shopping cart not found"});
+    }
+
+    // return all the events in the shopping cart
+    const items = shoppingCart.items;
+    const events = [];
+    for (const item of items) {
+        const event = await EventModel.findById(item.event_id);
+        if (!event) {
+            continue;
+        }
+        events.push(event);
+    }
+
+    return res.status(200).json({events: events});
+}
+
+export default {
+    paymentIntent,
+    checkoutSession,
+    test,
+    createProduct,
+    createCustomer,
+    createAccount,
+    getCharges,
+    checkout,
+    prepareCheckout
+};

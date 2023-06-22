@@ -1,8 +1,8 @@
 import {model, Schema} from "mongoose"
 
 export interface IShoppingCartItem {
-    item_id: string;
-    quantity: number;
+    event_id: string;
+    amount: number;
     price: number;
 }
 

@@ -11,4 +11,8 @@ router.post('/create-checkout-session', paymentController.checkoutSession);
 
 router.get('/get-charges/:stripe_id', paymentController.getCharges);
 
+router.post('/checkout', paymentController.checkout);
+
+router.get('/prepare-checkout', paymentController.prepareCheckout);
+
 export default router;

@@ -3,7 +3,7 @@ import ShoppingCartModel, {IShoppingCartItem} from './ShoppingCartModel';
 import jwt from "jsonwebtoken";
 import {IJWTPayload} from "../../helper";
 
-const getTokenAndDecode = async (req: Request, res: Response) => {
+export const getTokenAndDecode = async (req: Request, res: Response) => {
     const token = req.headers.authorization?.split(" ")[1];
     if (!token) {
         return null;
@@ -57,8 +57,8 @@ const remove = async (req: Request, res: Response) => {
         return res.status(404).json({message: "Shopping cart not found"});
     }
 
-    const item_id = req.params.item_id;
-    const index = shoppingCart.items.findIndex(item => item.item_id === item_id);
+    const event_id = req.params.event_id;
+    const index = shoppingCart.items.findIndex(item => item.event_id === event_id);
     if (index === -1) {
         return res.status(404).json({message: "Item not found"});
     }

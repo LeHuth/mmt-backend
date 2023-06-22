@@ -1,4 +1,4 @@
-import {model , Schema} from 'mongoose';
+import {model, Schema} from 'mongoose';
 
 
 export interface IHappening {
@@ -14,7 +14,7 @@ export interface IEvent {
     name: string;
     quip?: string;
     description: string;
-    happenings?: IHappening[];
+    happenings: IHappening[];
     tags: string[];
     organizer: string;
     images: string[];
@@ -39,7 +39,6 @@ const eventSchema = new Schema<IEvent>({
     price: {type: Number, required: true},
     available: {type: Number, required: true}
 })
-
 
 
 const EventModel = model<IEvent>("EventModel", eventSchema)
