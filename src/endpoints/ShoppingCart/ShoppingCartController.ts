@@ -70,4 +70,21 @@ const remove = async (req: Request, res: Response) => {
 
 }
 
-export default {add}
+const get = async (req: Request, res: Response) => {
+    const decoded = await getTokenAndDecode(req, res);
+    if (!decoded) {
+        return res.status(401).json({message: "Invalid credentials"});
+    }
+
+    const user_id = (decoded as IJWTPayload).user.id;
+
+    const shoppingCart = await ShoppingCartModel.findOne({user_id: user_id});
+
+    if (!shoppingCart) {
+        return res.status(404).json({message: "Shopping cart not found"});
+    }
+
+    return res.status(200).json({message: "Shopping cart found", shoppingCart: shoppingCart});
+}
+
+export default {add, remove, get}
