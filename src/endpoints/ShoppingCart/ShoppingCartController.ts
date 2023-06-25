@@ -6,6 +6,7 @@ import {IJWTPayload} from "../../helper";
 export const getTokenAndDecode = async (req: Request, res: Response) => {
     const token = req.headers.authorization?.split(" ")[1];
     if (!token) {
+        console.log("No token provided");
         return null;
     }
     const decoded = await jwt.verify(token, process.env.JWT_SECRET as string);
@@ -30,6 +31,7 @@ const add = async (req: Request, res: Response) => {
     const shoppingCart = await ShoppingCartModel.findOne({user_id: user_id});
 
     if (!shoppingCart) {
+        console.log("No shopping cart found")
         const newShoppingCart = new ShoppingCartModel({
             user_id: user_id,
             items: newItems,
@@ -37,7 +39,16 @@ const add = async (req: Request, res: Response) => {
         await newShoppingCart.save();
         return res.status(200).json({message: "Shopping cart created", shoppingCart: newShoppingCart});
     } else {
-        shoppingCart.items = [...shoppingCart.items, ...newItems];
+        for (const item of newItems) {
+            const index = shoppingCart.items.findIndex(i => i.event_id === item.event_id);
+            if (index === -1) {
+                shoppingCart.items.push(item);
+            } else {
+                shoppingCart.items[index].amount += item.amount;
+                await shoppingCart.save();
+                await ShoppingCartModel.updateOne({user_id: shoppingCart.user_id}, {$set: {items: shoppingCart.items}});
+            }
+        }
         await shoppingCart.save();
         return res.status(200).json({message: "Shopping cart updated", shoppingCart: shoppingCart});
     }
@@ -87,4 +98,40 @@ const get = async (req: Request, res: Response) => {
     return res.status(200).json({message: "Shopping cart found", shoppingCart: shoppingCart});
 }
 
-export default {add, remove, get}
+const updateItem = async (req: Request, res: Response) => {
+    const decoded = await getTokenAndDecode(req, res);
+    if (!decoded) {
+        return res.status(401).json({message: "Invalid credentials"});
+    }
+
+    const user_id = (decoded as IJWTPayload).user.id;
+
+    const shoppingCart = await ShoppingCartModel.findOne({user_id: user_id});
+
+    if (!shoppingCart) {
+        return res.status(404).json({message: "Shopping cart not found"});
+    }
+
+    const amount: string = req.query.amount as string
+
+    if (!amount) {
+        return res.status(400).json({message: "No amount provided"});
+    }
+
+    if (parseInt(amount) < 1 || parseInt(amount) > 10) {
+        return res.status(400).json({message: "Amount must be between 1 and 10"});
+    }
+
+    const event_id = req.params.event_id;
+    const index = shoppingCart.items.findIndex(item => item.event_id === event_id);
+    if (index === -1) {
+        return res.status(404).json({message: "Item not found"});
+    }
+    shoppingCart.items[index].amount = parseInt(amount);
+    await shoppingCart.save();
+    await ShoppingCartModel.updateOne({user_id: shoppingCart.user_id}, {$set: {items: shoppingCart.items}});
+
+    return res.status(200).json({message: "Item updated", shoppingCart: shoppingCart});
+}
+
+export default {add, remove, get, updateItem}

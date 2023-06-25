@@ -1,8 +1,17 @@
 import {Bucket, Storage} from "@google-cloud/storage";
 import UserModel from "./endpoints/User/UserModel";
+import TagModel from "./endpoints/Tags/TagModel";
 import bcrypt from "bcryptjs";
 import process from "process";
 import jwt from "jsonwebtoken";
+import EventLocationModel, {IAddress} from "./endpoints/EventLocation/EventLocationModel";
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+import tags from "../tags.json";
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+import {v4 as uuidv4} from 'uuid';
+import EventModel, {IHappening} from "./endpoints/Event/EventModel";
 
 
 export const createDefaultAdmin = async () => {
@@ -79,6 +88,125 @@ export const createDefaultUser = async () => {
     }).catch((error) => {
         console.error('Error creating user:', error);
     });
+}
+
+export const createDefaultLocation = async () => {
+    const location = await EventLocationModel.findOne({name: 'BHT'});
+    if (!location) {
+        const address: IAddress = {
+            street: 'Luxemburger Straße',
+            houseNumber: '10',
+            city: 'Berlin',
+            zipCode: '13353',
+            country: 'Deutschland',
+        }
+        await EventLocationModel.create({
+            name: 'BHT',
+            address: address,
+            description: 'Default location',
+        }).then(() => {
+            console.log('Location created');
+        }).catch((error) => {
+            console.error('Error creating location:', error);
+        });
+    } else {
+        console.log('Location already exists');
+    }
+}
+
+export const createDefaultTags = async () => {
+    const tagsFromDb = await TagModel.find({});
+    if (tagsFromDb.length === 0) {
+        for (const tag of tags.tags) {
+            const newTag = new TagModel({
+                _id: uuidv4(),
+                name: tag.name,
+            });
+            await newTag.save();
+        }
+    } else {
+        console.log('Tags already exist');
+    }
+}
+
+export const createDefaultEvent = async () => {
+    const event = await EventModel.findOne({name: 'Default Event'});
+    if (!event) {
+        const organizer = await UserModel.findOne({email: 'organizer@mail.de'});
+        const location = await EventLocationModel.findOne({name: 'BHT'});
+        const tags = await TagModel.find({url_param: 'electronic'});
+        const happening: IHappening = {
+            date: new Date(),
+            time: '12:00',
+            place: location?._id || ''
+        }
+        if (organizer && location && tags) {
+            await EventModel.create({
+                _id: uuidv4(),
+                name: 'Default Event',
+                quip: 'Amazing default event',
+                description: 'Default Event',
+                organizer: organizer._id,
+                happenings: [happening],
+                tags: [tags[0]._id],
+                images: ['https://cdn.midjourney.com/9da77a74-e3dc-43f9-b1b8-9b2d9d582b69/0_0.png', 'https://cdn.midjourney.com/6467560c-f0b2-424f-b522-79a881c2f9fc/0_0.png', 'https://cdn.midjourney.com/6084addc-0f57-4c7b-8e4e-f13090f14638/0_0.png'],
+                price: 30,
+                available: 75,
+            }).then(() => {
+                console.log('Event created');
+            }).catch((error) => {
+                console.error('Error creating event:', error);
+            });
+            await EventModel.create({
+                _id: uuidv4(),
+                name: 'Alien Architecture',
+                quip: 'Brulalist Architecture on foreign planets',
+                description: 'Default Event',
+                organizer: organizer._id,
+                happenings: [happening],
+                tags: [tags[0]._id],
+                images: ['https://cdn.midjourney.com/8c2b3778-6c5a-4355-bca5-610004790827/0_0.png', 'https://cdn.midjourney.com/6467560c-f0b2-424f-b522-79a881c2f9fc/0_0.png', 'https://cdn.midjourney.com/6084addc-0f57-4c7b-8e4e-f13090f14638/0_0.png'],
+                price: 30,
+                available: 75,
+            }).then(() => {
+                console.log('Event created');
+            }).catch((error) => {
+                console.error('Error creating event:', error);
+            });
+            await EventModel.create({
+                _id: uuidv4(),
+                name: 'Two Men Standing',
+                quip: 'Abstract Urban Art',
+                description: 'Default Event',
+                organizer: organizer._id,
+                happenings: [happening],
+                tags: [tags[0]._id],
+                images: ['https://cdn.midjourney.com/6467560c-f0b2-424f-b522-79a881c2f9fc/0_0.png', 'https://cdn.midjourney.com/6467560c-f0b2-424f-b522-79a881c2f9fc/0_0.png', 'https://cdn.midjourney.com/6084addc-0f57-4c7b-8e4e-f13090f14638/0_0.png'],
+                price: 30,
+                available: 75,
+            }).then(() => {
+                console.log('Event created');
+            }).catch((error) => {
+                console.error('Error creating event:', error);
+            });
+            await EventModel.create({
+                _id: uuidv4(),
+                name: 'Depesh Mode',
+                quip: 'Abstract Urban Art',
+                description: 'Default Event',
+                organizer: organizer._id,
+                happenings: [happening],
+                tags: [tags[0]._id],
+                images: ['https://cdn.midjourney.com/b8d00753-2dcc-4ffa-a87c-3dba2ff6e2b4/0_3.png', 'https://cdn.midjourney.com/6467560c-f0b2-424f-b522-79a881c2f9fc/0_0.png', 'https://cdn.midjourney.com/6084addc-0f57-4c7b-8e4e-f13090f14638/0_0.png'],
+                price: 30,
+                available: 75,
+            }).then(() => {
+                console.log('Event created');
+            }).catch((error) => {
+                console.error('Error creating event:', error);
+            });
+        }
+    }
 }
 const setupGoogleStorageConnection = (): Bucket => {
     try {

@@ -23,6 +23,7 @@ export interface IEvent {
 }
 
 const eventSchema = new Schema<IEvent>({
+    _id: {type: String, required: false},
     name: {type: String, required: true},
     stripe_id: {type: String, default: 'not-set'},
     organizer_stripe_id: {type: String, default: 'not-set'},

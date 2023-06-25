@@ -1,5 +1,9 @@
 import {model, Schema} from 'mongoose';
 import axios from "axios";
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+import {v4 as uuidv4} from 'uuid';
+
 export interface IAddress {
     street: string;
     houseNumber: string;
@@ -24,6 +28,7 @@ export interface IOpenHours {
 }
 
 export interface IEventLocation {
+    _id?: string;
     name: string;
     address: IAddress;
     location?: ILocation;
@@ -32,6 +37,7 @@ export interface IEventLocation {
 }
 
 const eventSchema = new Schema<IEventLocation>({
+    _id: {type: String, required: false, default: uuidv4()},
     name: {type: String, required: true},
     address: {
         street: {type: String, required: true},
@@ -56,16 +62,16 @@ const eventSchema = new Schema<IEventLocation>({
     description: {type: String, required: false}
 })
 
-eventSchema.pre("save", async function(next) {
+eventSchema.pre("save", async function (next) {
     const url = "https://nominatim.openstreetmap.org/search?format=json&street=" + this.address.street + "+" + this.address.houseNumber + "&city=" + this.address.city + "&country=" + this.address.country + "&postalcode=" + this.address.zipCode;
     const response = await axios.get(url);
     const data = response.data;
-    if(data.length > 0){
+    if (data.length > 0) {
         this.location = {
             latitude: parseFloat(data[0].lat),
             longitude: parseFloat(data[0].lon)
         }
-    } else{
+    } else {
         this.location = {
             latitude: 0,
             longitude: 0

@@ -1,0 +1,109 @@
+{
+  "tags": [
+    {
+      "name": "Rock"
+    },
+    {
+      "name": "Pop"
+    },
+    {
+      "name": "Classical"
+    },
+    {
+      "name": "Jazz"
+    },
+    {
+      "name": "Country"
+    },
+    {
+      "name": "Electronic"
+    },
+    {
+      "name": "Hip Hop"
+    },
+    {
+      "name": "Indie"
+    },
+    {
+      "name": "Live Bands"
+    },
+    {
+      "name": "Drama"
+    },
+    {
+      "name": "Comedy"
+    },
+    {
+      "name": "Tragedy"
+    },
+    {
+      "name": "Musical"
+    },
+    {
+      "name": "Improvisation"
+    },
+    {
+      "name": "Family-Friendly"
+    },
+    {
+      "name": "Professional"
+    },
+    {
+      "name": "Collegiate"
+    },
+    {
+      "name": "High School"
+    },
+    {
+      "name": "International"
+    },
+    {
+      "name": "Championship"
+    },
+    {
+      "name": "Science"
+    },
+    {
+      "name": "Business"
+    },
+    {
+      "name": "Technology"
+    },
+    {
+      "name": "Humanities"
+    },
+    {
+      "name": "Personal Development"
+    },
+    {
+      "name": "Networking"
+    },
+    {
+      "name": "Professional Development"
+    },
+    {
+      "name": "Local"
+    },
+    {
+      "name": "Tourist"
+    },
+    {
+      "name": "DIY"
+    },
+    {
+      "name": "Fitness"
+    },
+    {
+      "name": "Outdoor"
+    },
+    {
+      "name": "Indoor"
+    },
+    {
+      "name": "Cultural"
+    },
+    {
+      "name": "Food and Drink"
+    }
+  ]
+}
