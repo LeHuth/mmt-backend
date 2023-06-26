@@ -330,7 +330,7 @@ app.post("/api/upload", (req: Request, res: Response) => {
 
 
 export const extractUserIdFromToken = (token: string, callback: (err: Error | null, userId: string | null) => void) => {
-    jwt.verify(token, 'YOUR_SECRET_KEY', (err, data) => {
+    jwt.verify(token, process.env.JWT_SECRET as string, (err, data) => {
         const payload = data as IJWTPayload;
         if (err) {
             callback(err, null);

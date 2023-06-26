@@ -9,6 +9,9 @@ import {getTokenAndDecode} from "../ShoppingCart/ShoppingCartController";
 import ShoppingCartModel from "../ShoppingCart/ShoppingCartModel";
 import TicketModel from "../Ticket/TicketModel";
 import {TicketStatus} from "../Ticket/TicketSaleStatsModel";
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+import {v4 as uuidv4} from 'uuid';
 
 const calculateOrderAmount = (items: IEvent[]) => {
     let sum = 0;
@@ -270,6 +273,7 @@ const createTickets = async (items: { event_id: string, amount: number }[], user
 
         for (let i = 0; i < item.amount; i++) {
             const ticket = await new TicketModel({
+                _id: uuidv4(),
                 name: Event.name,
                 event_id: item.event_id,
                 owner_id: user_id,
@@ -313,7 +317,8 @@ const checkout = async (req: Request, res: Response) => {
 
     // step 2: create Tickets from the shopping cart
     const tickets = await createTickets(items, user_id);
-
+    shoppingCart.items = [];
+    await shoppingCart.save();
     return res.status(200).json({tickets: tickets});
 
 }
@@ -340,7 +345,7 @@ const prepareCheckout = async (req: Request, res: Response) => {
         if (!event) {
             continue;
         }
-        events.push(event);
+        events.push({...event.toJSON(), amount: item.amount});
     }
 
     return res.status(200).json({events: events});

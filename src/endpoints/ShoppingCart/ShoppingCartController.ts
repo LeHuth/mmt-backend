@@ -9,11 +9,13 @@ export const getTokenAndDecode = async (req: Request, res: Response) => {
         console.log("No token provided");
         return null;
     }
-    const decoded = await jwt.verify(token, process.env.JWT_SECRET as string);
-    if (!decoded) {
+    try {
+        return await jwt.verify(token, process.env.JWT_SECRET as string);
+    } catch (e) {
+        console.error("Invalid token");
         return null;
     }
-    return decoded;
+
 }
 
 const add = async (req: Request, res: Response) => {
