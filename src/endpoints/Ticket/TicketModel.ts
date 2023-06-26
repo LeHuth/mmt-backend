@@ -9,6 +9,7 @@ export interface ITicket {
     date: string;
     location_id: string;
     isUsed: boolean;
+    validatedAt?: string;
 }
 
 const ticketSchema = new Schema<ITicket>({
@@ -19,7 +20,8 @@ const ticketSchema = new Schema<ITicket>({
     price: { type: Number, required: true },
     date: { type: String, required: true },
     location_id: { type: String, required: true },
-    isUsed: { type: Boolean, required: true, default: false }
+    isUsed: { type: Boolean, required: true, default: false },
+    validatedAt: { type: String, required: false },
 })
 
 const TicketModel = model<ITicket>("TicketModel", ticketSchema)

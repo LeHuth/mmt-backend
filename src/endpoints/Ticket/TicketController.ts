@@ -33,12 +33,13 @@ const validate = (req: Request, res: Response) => {
           return res.status(404).json({ success: false, message: "Ticket nicht gefunden." });
         }
         if (ticket.isUsed) {
-          return res.status(409).json({ success: false, message: "Ticket ist bereits verwendet." });
+          return res.status(409).json({ success: false, message: "Ticket ist bereits verwendet.", usage: ticket.validatedAt });
         }
         ticket.isUsed = true;
+        ticket.validatedAt = new Date().toISOString();
         ticket.save()
           .then(() => {
-            return res.status(200).json({ success: true, message: "Ticket validiert." });
+            return res.status(200).json({ success: true, message: "Ticket validiert.", usage: ticket.validatedAt });
           })
           .catch((err) => {
             return res.status(500).json({ success: false, message: err.message });
