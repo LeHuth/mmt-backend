@@ -34,6 +34,8 @@ async function connectToMongo() {
             throw new Error("MONGO_URI is not defined");
         }
         const connection = await mongoose.connect(process.env.MONGO_URI);
+        console.log(connection.connection.db.databaseName);
+        
         console.log('MongoDB connected');
         //add function that creates admin user if it doesn't exist
         await createDefaultAdmin();
