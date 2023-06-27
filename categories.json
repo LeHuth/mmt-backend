@@ -1,0 +1,136 @@
+{
+  "categories": [
+    {
+      "name": "Concerts",
+      "url-param": "concerts"
+    },
+    {
+      "name": "Music Festivals",
+      "url-param": "music-festivals"
+    },
+    {
+      "name": "Operas",
+      "url-param": "operas"
+    },
+    {
+      "name": "Symphonies",
+      "url-param": "symphonies"
+    },
+    {
+      "name": "Plays",
+      "url-param": "plays"
+    },
+    {
+      "name": "Ballet",
+      "url-param": "ballet"
+    },
+    {
+      "name": "Contemporary Dance",
+      "url-param": "contemporary-dance"
+    },
+    {
+      "name": "Stand-up Comedy",
+      "url-param": "stand-up-comedy"
+    },
+    {
+      "name": "Circus",
+      "url-param": "circus"
+    },
+    {
+      "name": "Magic Shows",
+      "url-param": "magic-shows"
+    },
+    {
+      "name": "Football",
+      "url-param": "football"
+    },
+    {
+      "name": "Basketball",
+      "url-param": "basketball"
+    },
+    {
+      "name": "Baseball",
+      "url-param": "baseball"
+    },
+    {
+      "name": "Soccer",
+      "url-param": "soccer"
+    },
+    {
+      "name": "Tennis",
+      "url-param": "tennis"
+    },
+    {
+      "name": "Racing",
+      "url-param": "racing"
+    },
+    {
+      "name": "Boxing",
+      "url-param": "boxing"
+    },
+    {
+      "name": "eSports",
+      "url-param": "esports"
+    },
+    {
+      "name": "Lectures",
+      "url-param": "lectures"
+    },
+    {
+      "name": "Seminars",
+      "url-param": "seminars"
+    },
+    {
+      "name": "Workshops",
+      "url-param": "workshops"
+    },
+    {
+      "name": "Conferences",
+      "url-param": "conferences"
+    },
+    {
+      "name": "Food and Wine Tasting",
+      "url-param": "food-and-wine-tasting"
+    },
+    {
+      "name": "Cooking Classes",
+      "url-param": "cooking-classes"
+    },
+    {
+      "name": "Art Classes",
+      "url-param": "art-classes"
+    },
+    {
+      "name": "City Tours",
+      "url-param": "city-tours"
+    },
+    {
+      "name": "Adventure Activities",
+      "url-param": "adventure-activities"
+    },
+    {
+      "name": "Wellness Activities",
+      "url-param": "wellness-activities"
+    },
+    {
+      "name": "Art Fairs",
+      "url-param": "art-fairs"
+    },
+    {
+      "name": "Book Fairs",
+      "url-param": "book-fairs"
+    },
+    {
+      "name": "Food Festivals",
+      "url-param": "food-festivals"
+    },
+    {
+      "name": "Cultural Festivals",
+      "url-param": "cultural-festivals"
+    },
+    {
+      "name": "Music Festivals",
+      "url-param": "music-festivals"
+    }
+  ]
+}

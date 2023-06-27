@@ -6,6 +6,7 @@ import * as process from "process";
 import router from "./routes";
 import {
     createDefaultAdmin,
+    createDefaultCategories,
     createDefaultEvent,
     createDefaultLocation,
     createDefaultOrganizer,
@@ -35,7 +36,7 @@ async function connectToMongo() {
         }
         const connection = await mongoose.connect(process.env.MONGO_URI);
         console.log(connection.connection.db.databaseName);
-        
+
         console.log('MongoDB connected');
         //add function that creates admin user if it doesn't exist
         await createDefaultAdmin();
@@ -43,6 +44,7 @@ async function connectToMongo() {
         await createDefaultUser();
         await createDefaultLocation();
         await createDefaultTags();
+        await createDefaultCategories();
         await createDefaultEvent();
 
     } catch (error) {

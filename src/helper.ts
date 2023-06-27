@@ -8,10 +8,12 @@ import EventLocationModel, {IAddress} from "./endpoints/EventLocation/EventLocat
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import tags from "../tags.json";
+import categories from "../categories.json";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import {v4 as uuidv4} from 'uuid';
 import EventModel, {IHappening} from "./endpoints/Event/EventModel";
+import CategoryModel from "./endpoints/Category/CategoryModel";
 
 
 export const createDefaultAdmin = async () => {
@@ -129,12 +131,26 @@ export const createDefaultTags = async () => {
     }
 }
 
+export const createDefaultCategories = async () => {
+    const categoriesFromDb = await CategoryModel.find({});
+    if (categoriesFromDb.length === 0) {
+        for (const category of categories.categories) {
+            const newCategory = new CategoryModel({
+                _id: uuidv4(),
+                name: category.name,
+            });
+            await newCategory.save();
+        }
+    }
+}
+
 export const createDefaultEvent = async () => {
     const event = await EventModel.findOne({name: 'Default Event'});
     if (!event) {
         const organizer = await UserModel.findOne({email: 'organizer@mail.de'});
         const location = await EventLocationModel.findOne({name: 'BHT'});
         const tags = await TagModel.find({url_param: 'electronic'});
+        const categories = await CategoryModel.find({});
         const happening: IHappening = {
             date: new Date(),
             time: '12:00',
@@ -150,10 +166,16 @@ export const createDefaultEvent = async () => {
                 happenings: [happening],
                 tags: [tags[0]._id],
                 images: ['https://cdn.midjourney.com/9da77a74-e3dc-43f9-b1b8-9b2d9d582b69/0_0.png', 'https://cdn.midjourney.com/6467560c-f0b2-424f-b522-79a881c2f9fc/0_0.png', 'https://cdn.midjourney.com/6084addc-0f57-4c7b-8e4e-f13090f14638/0_0.png'],
+                category: categories[0]._id,
                 price: 30,
                 available: 75,
             }).then(() => {
                 console.log('Event created');
+                CategoryModel.updateOne({_id: categories[0]._id}, {$inc: {amount: 1}}).then(() => {
+                    console.log('Category updated');
+                }).catch((error) => {
+                    console.error('Error updating category:', error);
+                });
             }).catch((error) => {
                 console.error('Error creating event:', error);
             });
@@ -166,10 +188,16 @@ export const createDefaultEvent = async () => {
                 happenings: [happening],
                 tags: [tags[0]._id],
                 images: ['https://cdn.midjourney.com/8c2b3778-6c5a-4355-bca5-610004790827/0_0.png', 'https://cdn.midjourney.com/6467560c-f0b2-424f-b522-79a881c2f9fc/0_0.png', 'https://cdn.midjourney.com/6084addc-0f57-4c7b-8e4e-f13090f14638/0_0.png'],
+                category: categories[0]._id,
                 price: 30,
                 available: 75,
             }).then(() => {
                 console.log('Event created');
+                CategoryModel.updateOne({_id: categories[0]._id}, {$inc: {amount: 1}}).then(() => {
+                    console.log('Category updated');
+                }).catch((error) => {
+                    console.error('Error updating category:', error);
+                });
             }).catch((error) => {
                 console.error('Error creating event:', error);
             });
@@ -181,11 +209,17 @@ export const createDefaultEvent = async () => {
                 organizer: organizer._id,
                 happenings: [happening],
                 tags: [tags[0]._id],
+                category: categories[1]._id,
                 images: ['https://cdn.midjourney.com/6467560c-f0b2-424f-b522-79a881c2f9fc/0_0.png', 'https://cdn.midjourney.com/6467560c-f0b2-424f-b522-79a881c2f9fc/0_0.png', 'https://cdn.midjourney.com/6084addc-0f57-4c7b-8e4e-f13090f14638/0_0.png'],
                 price: 30,
                 available: 75,
             }).then(() => {
                 console.log('Event created');
+                CategoryModel.updateOne({_id: categories[1]._id}, {$inc: {amount: 1}}).then(() => {
+                    console.log('Category updated');
+                }).catch((error) => {
+                    console.error('Error updating category:', error);
+                });
             }).catch((error) => {
                 console.error('Error creating event:', error);
             });
@@ -197,11 +231,17 @@ export const createDefaultEvent = async () => {
                 organizer: organizer._id,
                 happenings: [happening],
                 tags: [tags[0]._id],
+                category: categories[2]._id,
                 images: ['https://cdn.midjourney.com/b8d00753-2dcc-4ffa-a87c-3dba2ff6e2b4/0_3.png', 'https://cdn.midjourney.com/6467560c-f0b2-424f-b522-79a881c2f9fc/0_0.png', 'https://cdn.midjourney.com/6084addc-0f57-4c7b-8e4e-f13090f14638/0_0.png'],
                 price: 30,
                 available: 75,
             }).then(() => {
                 console.log('Event created');
+                CategoryModel.updateOne({_id: categories[2]._id}, {$inc: {amount: 1}}).then(() => {
+                    console.log('Category updated');
+                }).catch((error) => {
+                    console.error('Error updating category:', error);
+                });
             }).catch((error) => {
                 console.error('Error creating event:', error);
             });

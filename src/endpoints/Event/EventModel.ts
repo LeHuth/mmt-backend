@@ -16,6 +16,7 @@ export interface IEvent {
     description: string;
     happenings: IHappening[];
     tags: string[];
+    category: string;
     organizer: string;
     images: string[];
     price: number;
@@ -35,6 +36,7 @@ const eventSchema = new Schema<IEvent>({
         place: {type: String, required: true}
     }],
     tags: {type: [String], required: true},
+    category: {type: String, required: true},
     organizer: {type: String, required: true},
     images: {type: [String], required: true},
     price: {type: Number, required: true},
