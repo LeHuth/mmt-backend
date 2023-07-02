@@ -36,7 +36,7 @@ const validate = (req: Request, res: Response) => {
           return res.status(409).json({ success: false, message: "Ticket ist bereits verwendet.", usage: ticket.validatedAt });
         }
         ticket.isUsed = true;
-        ticket.validatedAt = new Date().toISOString();
+        ticket.validatedAt = new Date().toLocaleString();
         ticket.save()
           .then(() => {
             return res.status(200).json({ success: true, message: "Ticket validiert.", usage: ticket.validatedAt });
