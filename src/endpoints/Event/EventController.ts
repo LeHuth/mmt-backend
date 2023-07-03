@@ -1,8 +1,7 @@
 import {Request, Response} from "express";
-import EventModel, {IEvent} from "./EventModel";
+import EventModel from "./EventModel";
 import {Document} from "mongoose";
 import {uploadImage} from "../../helper";
-import paymentController from "../Payment/PaymentController";
 
 
 const teapot = (req: Request, res: Response) => {
@@ -99,6 +98,7 @@ const deleteById = (req: Request, res: Response) => {
 const filter = (req: Request, res: Response) => {
     //get query params
     const {name, description} = req.query;
+
     interface Filter {
         name?: { $regex: string, $options: string },/*
         description?: { $regex: string, $options: string },
@@ -127,4 +127,12 @@ const filter = (req: Request, res: Response) => {
 
 }
 
-export default {teapot, create, getAll, update, getById, deleteById, filter};
+const getByCategory = (req: Request, res: Response) => {
+    EventModel.find({category: req.params.id}).then((data) => {
+        return res.status(200).json(data);
+    }).catch((err) => {
+        return res.status(500).json({message: err.message});
+    });
+}
+
+export default {teapot, create, getAll, update, getById, deleteById, filter, getByCategory};
