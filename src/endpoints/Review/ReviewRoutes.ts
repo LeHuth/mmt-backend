@@ -19,3 +19,11 @@ router.post('/create', ReviewController.createReview);
 // delete review
 router.delete('/delete/:id', ReviewController.deleteReview);
 
+//get my reviews for event
+router.get('/my/:id', ReviewController.getMyReviewsForEvent);
+
+//get all reviews for event
+router.get('/all/:id', ReviewController.getAllReviewsForEvent);
+
+export default router;
+
