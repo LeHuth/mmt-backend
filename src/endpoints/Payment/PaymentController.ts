@@ -391,50 +391,59 @@ const webhook = async (req: Request, res: Response) => {
     const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
     const sig = req.headers['stripe-signature'];
 
-    let event;
+    let event = req.body;
+    // Only verify the event if you have an endpoint secret defined.
+    // Otherwise use the basic event deserialized with JSON.parse
+    if (stripeWebhookSecret) {
+        // Get the signature sent by Stripe
+        const signature = req.headers['stripe-signature'];
+        try {
+            event = stripe.webhooks.constructEvent(
+                req.body,
+                signature,
+                stripeWebhookSecret
+            );
+        } catch (err) {
+            // @ts-ignore
+            console.log(`⚠️  Webhook signature verification failed.`, err.message);
+            return res.status(400).send();
+        }
+        let paymentIntent = null;
+        // Handle the event
+        switch (event.type) {
+            case 'payment_intent.succeeded':
+                paymentIntent = event.data.object;
+                const transporter = nodemailer.createTransport({
+                    host: "live.smtp.mailtrap.io",
+                    port: 465,
+                    auth: {
+                        user: "api",
+                        pass: process.env.MAILTRAP_API_KEY
+                    }
+                });
 
-    try {
-        event = stripe.webhooks.constructEvent(req.body, sig, stripeWebhookSecret);
-    } catch (err) {
-        // @ts-ignore
-        res.status(400).send(`Webhook Error: ${err.message}`);
-        return;
+                // send mail with defined transport object
+                const info = await transporter.sendMail({
+                    from: 'payment@mapmytickets.de', // sender address
+                    to: ['bht.playtest@gmail.com'], // list of receivers
+                    subject: "Payment Success", // Subject line
+                    text: 'Your payment was completed successfully', // plain text body
+                    //html: "<b>Hello world!</b>", // html body
+                });
+                console.log('PaymentIntent was successful!');
+                break;
+            case 'payment_intent.payment_failed':
+                paymentIntent = event.data.object;
+                console.log('PaymentIntent failed');
+                break;
+            default:
+                // Unexpected event type
+                return res.status(400).end();
+        }
+
+        // Return a response to acknowledge receipt of the event
+        res.json({received: true});
     }
-    let paymentIntent = null;
-    // Handle the event
-    switch (event.type) {
-        case 'payment_intent.succeeded':
-            paymentIntent = event.data.object;
-            const transporter = nodemailer.createTransport({
-                host: "live.smtp.mailtrap.io",
-                port: 465,
-                auth: {
-                    user: "api",
-                    pass: process.env.MAILTRAP_API_KEY
-                }
-            });
-
-            // send mail with defined transport object
-            const info = await transporter.sendMail({
-                from: 'payment@mapmytickets.de', // sender address
-                to: ['bht.playtest@gmail.com'], // list of receivers
-                subject: "Payment Success", // Subject line
-                text: 'Your payment was completed successfully', // plain text body
-                //html: "<b>Hello world!</b>", // html body
-            });
-            console.log('PaymentIntent was successful!');
-            break;
-        case 'payment_intent.payment_failed':
-            paymentIntent = event.data.object;
-            console.log('PaymentIntent failed');
-            break;
-        default:
-            // Unexpected event type
-            return res.status(400).end();
-    }
-
-    // Return a response to acknowledge receipt of the event
-    res.json({received: true});
 }
 
 export default {
