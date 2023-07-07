@@ -148,8 +148,7 @@ const paymentIntent = async (req: Request, res: Response) => {
                 enabled: true,
             },
             metadata: {
-                user_id: user_id,
-                items: JSON.stringify(tickets_ids),
+                user_id: user_id.toString(),
             }
         });
 
