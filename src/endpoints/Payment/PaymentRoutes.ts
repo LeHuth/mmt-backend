@@ -15,6 +15,6 @@ router.post('/checkout', paymentController.checkout);
 
 router.get('/prepare-checkout', paymentController.prepareCheckout);
 
-router.post('/webhook', paymentController.webhook);
+router.post('/webhook', express.json({type: 'application/json'}), paymentController.webhook);
 
 export default router;
