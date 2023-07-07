@@ -21,6 +21,10 @@ const swaggerFile = require('../swagger_output.json');
 dotenv.config();
 const app = express();
 app.use(cors());
+// allow same origin for development
+app.use(cors({
+    origin: 'https://mapmytickets.de'
+}));
 app.use(express.json({limit: '50mb'}));
 // @ts-ignore
 app.use(express.json());
