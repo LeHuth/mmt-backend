@@ -15,4 +15,6 @@ router.post('/checkout', paymentController.checkout);
 
 router.get('/prepare-checkout', paymentController.prepareCheckout);
 
+router.post('/webhook', paymentController.webhook);
+
 export default router;

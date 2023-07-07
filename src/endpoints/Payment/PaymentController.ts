@@ -6,12 +6,14 @@ import {Types} from "mongoose";
 import jwt from "jsonwebtoken";
 import {IJWTPayload} from "../../helper";
 import {getTokenAndDecode} from "../ShoppingCart/ShoppingCartController";
-import ShoppingCartModel from "../ShoppingCart/ShoppingCartModel";
+import ShoppingCartModel, {IShoppingCartItem} from "../ShoppingCart/ShoppingCartModel";
 import TicketModel from "../Ticket/TicketModel";
 import {TicketStatus} from "../Ticket/TicketSaleStatsModel";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import {v4 as uuidv4} from 'uuid';
+// @ts-ignore
+import nodemailer from 'nodemailer';
 
 const calculateOrderAmount = (items: IEvent[]) => {
     let sum = 0;
@@ -68,19 +70,87 @@ const createAccount = async (email: string, first_name: string, last_name: strin
     return {account_data: account, account_link: accountLink}
 }
 
+const checkIfEventIsAvailable = async (event_id: string, amount: number) => {
+    const result = await EventModel.find({_id: event_id})
+    const event = result[0] as IEvent;
+    return !(!event || event.available - amount < 0);
+}
+
+const checkIfEnoughTicketsAreAvailable = async (items: IShoppingCartItem[]) => {
+    for (const item of items) {
+        const available = await checkIfEventIsAvailable(item.event_id, item.amount);
+        if (!available) {
+            return false
+        }
+    }
+    return true;
+}
+
+const createTickets = async (items: { event_id: string, amount: number }[], user_id: string) => {
+    const tickets = [];
+    for (const item of items) {
+        const Event = await EventModel.findById(item.event_id);
+        if (!Event) {
+            continue;
+        }
+
+        for (let i = 0; i < item.amount; i++) {
+            const ticket = await new TicketModel({
+                _id: uuidv4(),
+                name: Event.name,
+                event_id: item.event_id,
+                owner_id: user_id,
+                price: Event.price,
+                date: Event.happenings[0].date,
+                location_id: Event.happenings[0].place,
+                isUsed: false,
+                status: TicketStatus.PENDING,
+
+            });
+            await ticket.save();
+            tickets.push(ticket);
+        }
+    }
+
+    return tickets;
+}
+
 const paymentIntent = async (req: Request, res: Response) => {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
-    const {items} = req.body;
-    let amount: number;
+    const decoded = await getTokenAndDecode(req, res);
+    if (!decoded) {
+        res.status(401).send({error: "Not authorized"});
+    }
+    const user_id = (decoded as IJWTPayload).user.id;
+
+    const cart = await ShoppingCartModel.findOne({user_id: user_id});
+
+    if (!cart) {
+        return res.status(400).send({error: "Shopping cart not found"});
+    }
+    if (cart.items.length === 0) {
+        res.status(400).send({error: "Shopping cart is empty"});
+    }
+    const items = cart.items;
+    const available = await checkIfEnoughTicketsAreAvailable(items);
+    if (!available) {
+        return res.status(400).send({error: "Not enough tickets available"});
+    }
+
+    const tickets = await createTickets(items, cart.user_id);
+    const tickets_ids = tickets.map((ticket) => ticket._id);
     try {
-        amount = calculateOrderAmount(items);
         const paymentIntent = await stripe.paymentIntents.create({
-            amount: amount,
+            amount: cart.totalPrice * 100,
             currency: "eur",
             automatic_payment_methods: {
                 enabled: true,
             },
+            metadata: {
+                user_id: user_id,
+                items: JSON.stringify(tickets_ids),
+            }
         });
 
         res.status(200).send({
@@ -257,40 +327,6 @@ const getCharges = async (req: Request, res: Response) => {
     res.status(200).send({charges: paymentIntents});
 }
 
-const checkIfEventIsAvailable = async (event_id: string, amount: number) => {
-    const result = await EventModel.find({_id: event_id})
-    const event = result[0] as IEvent;
-    return !(!event || event.available - amount < 0);
-}
-
-const createTickets = async (items: { event_id: string, amount: number }[], user_id: string) => {
-    const tickets = [];
-    for (const item of items) {
-        const Event = await EventModel.findById(item.event_id);
-        if (!Event) {
-            continue;
-        }
-
-        for (let i = 0; i < item.amount; i++) {
-            const ticket = await new TicketModel({
-                _id: uuidv4(),
-                name: Event.name,
-                event_id: item.event_id,
-                owner_id: user_id,
-                price: Event.price,
-                date: Event.happenings[0].date,
-                location_id: Event.happenings[0].place,
-                isUsed: false,
-                status: TicketStatus.PENDING,
-
-            });
-            await ticket.save();
-            tickets.push(ticket);
-        }
-    }
-
-    return tickets;
-}
 
 const checkout = async (req: Request, res: Response) => {
     const decoded = await getTokenAndDecode(req, res);
@@ -350,6 +386,57 @@ const prepareCheckout = async (req: Request, res: Response) => {
 
     return res.status(200).json({events: events});
 }
+const stripeWebhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+const webhook = async (req: Request, res: Response) => {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+    const sig = req.headers['stripe-signature'];
+
+    let event;
+
+    try {
+        event = stripe.webhooks.constructEvent(req.body, sig, stripeWebhookSecret);
+    } catch (err) {
+        // @ts-ignore
+        res.status(400).send(`Webhook Error: ${err.message}`);
+        return;
+    }
+    let paymentIntent = null;
+    // Handle the event
+    switch (event.type) {
+        case 'payment_intent.succeeded':
+            paymentIntent = event.data.object;
+            const transporter = nodemailer.createTransport({
+                host: "live.smtp.mailtrap.io",
+                port: 465,
+                auth: {
+                    user: "api",
+                    pass: process.env.MAILTRAP_API_KEY
+                }
+            });
+
+            // send mail with defined transport object
+            const info = await transporter.sendMail({
+                from: 'payment@mapmytickets.de', // sender address
+                to: ['bht.playtest@gmail.com'], // list of receivers
+                subject: "Payment Success", // Subject line
+                text: 'Your payment was completed successfully', // plain text body
+                //html: "<b>Hello world!</b>", // html body
+            });
+            console.log('PaymentIntent was successful!');
+            break;
+        case 'payment_intent.payment_failed':
+            paymentIntent = event.data.object;
+            console.log('PaymentIntent failed');
+            break;
+        default:
+            // Unexpected event type
+            return res.status(400).end();
+    }
+
+    // Return a response to acknowledge receipt of the event
+    res.json({received: true});
+}
 
 export default {
     paymentIntent,
@@ -360,5 +447,6 @@ export default {
     createAccount,
     getCharges,
     checkout,
-    prepareCheckout
+    prepareCheckout,
+    webhook
 };

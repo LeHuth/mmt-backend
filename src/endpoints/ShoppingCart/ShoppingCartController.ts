@@ -18,6 +18,19 @@ export const getTokenAndDecode = async (req: Request, res: Response) => {
 
 }
 
+const updateTotalPrice = async (user_id: string) => {
+    const shoppingCart = await ShoppingCartModel.findOne({user_id: user_id});
+    if (!shoppingCart) {
+        console.log("No shopping cart found");
+        return;
+    }
+    const total = shoppingCart.items.reduce((acc: number, item: any) => acc + item.amount * item.price, 0);
+    console.log("Total price: ", total);
+    await ShoppingCartModel.updateOne({user_id: shoppingCart.user_id}, {$set: {totalPrice: total}});
+    await shoppingCart.save();
+    return;
+}
+
 const add = async (req: Request, res: Response) => {
     const decoded = await getTokenAndDecode(req, res);
     if (!decoded) {
@@ -37,6 +50,7 @@ const add = async (req: Request, res: Response) => {
         const newShoppingCart = new ShoppingCartModel({
             user_id: user_id,
             items: newItems,
+            totalPrice: newItems.reduce((acc, item) => acc + item.amount * item.price, 0)
         });
         await newShoppingCart.save();
         return res.status(200).json({message: "Shopping cart created", shoppingCart: newShoppingCart});
@@ -51,7 +65,12 @@ const add = async (req: Request, res: Response) => {
                 await ShoppingCartModel.updateOne({user_id: shoppingCart.user_id}, {$set: {items: shoppingCart.items}});
             }
         }
+
+        //update total price
+
         await shoppingCart.save();
+
+        await updateTotalPrice(shoppingCart.user_id);
         return res.status(200).json({message: "Shopping cart updated", shoppingCart: shoppingCart});
     }
 }
@@ -77,7 +96,7 @@ const remove = async (req: Request, res: Response) => {
     }
     shoppingCart.items.splice(index, 1);
     await shoppingCart.save();
-
+    await updateTotalPrice(shoppingCart.user_id);
     return res.status(200).json({message: "Item removed", shoppingCart: shoppingCart});
 
 
@@ -108,7 +127,7 @@ const updateItem = async (req: Request, res: Response) => {
 
     const user_id = (decoded as IJWTPayload).user.id;
 
-    const shoppingCart = await ShoppingCartModel.findOne({user_id: user_id});
+    let shoppingCart = await ShoppingCartModel.findOne({user_id: user_id});
 
     if (!shoppingCart) {
         return res.status(404).json({message: "Shopping cart not found"});
@@ -133,6 +152,9 @@ const updateItem = async (req: Request, res: Response) => {
     await shoppingCart.save();
     await ShoppingCartModel.updateOne({user_id: shoppingCart.user_id}, {$set: {items: shoppingCart.items}});
 
+    await updateTotalPrice(user_id);
+
+    shoppingCart = await ShoppingCartModel.findOne({user_id: user_id});
     return res.status(200).json({message: "Item updated", shoppingCart: shoppingCart});
 }
 
