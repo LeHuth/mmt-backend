@@ -12,11 +12,15 @@ import {TicketStatus} from "../Ticket/TicketSaleStatsModel";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import {v4 as uuidv4} from 'uuid';
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import nodemailer from 'nodemailer';
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import pdfmake from "pdfmake";
 import * as fs from "fs";
+import OrderController from "../Order/OrderController";
+import {OrderModel} from "../Order/OrderModel";
 
 const calculateOrderAmount = (items: IEvent[]) => {
     let sum = 0;
@@ -143,6 +147,7 @@ const paymentIntent = async (req: Request, res: Response) => {
 
     const tickets = await createTickets(items, cart.user_id);
     const tickets_ids = tickets.map((ticket) => ticket._id);
+    const order = await OrderController.createOrder(cart.user_id, tickets_ids, cart.totalPrice);
     try {
         const paymentIntent = await stripe.paymentIntents.create({
             amount: cart.totalPrice * 100,
@@ -152,6 +157,7 @@ const paymentIntent = async (req: Request, res: Response) => {
             },
             metadata: {
                 user_id: user_id.toString(),
+                order_id: order._id.toString(),
             }
         });
 
@@ -224,6 +230,7 @@ const createProduct = async (items: IEvent, organizer_id: string) => {
 const calcTotalAmount = async (lineItems: object[], stripe: any) => {
     let returnAmount = 0;
     for (const item of lineItems) {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         const price = await stripe.prices.retrieve(item.price);
         if (price) {
@@ -252,6 +259,7 @@ const checkoutSession = async (req: Request, res: Response) => {
         res.status(401).send({error: "Invalid token"});
         return;
     }
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     const user_id = decoded.user.id;
     const user = await UserModel.findById(user_id);
@@ -407,15 +415,18 @@ const webhook = async (req: Request, res: Response) => {
                 stripeWebhookSecret
             );
         } catch (err) {
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore
             console.log(`⚠️  Webhook signature verification failed.`, err.message);
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore
             return res.status(400).send({message: `Webhook Error: ${err.message}`});
         }
         let paymentIntent = null;
         // Handle the event
         switch (event.type) {
-            case 'payment_intent.succeeded':
+            case 'payment_intent.succeeded': {
+
                 paymentIntent = event.data.object;
                 const fonts = {
                     Roboto: {
@@ -515,15 +526,27 @@ const webhook = async (req: Request, res: Response) => {
                     ],
                     //html: "<b>Hello world!</b>", // html body
                 });
+                const order = await OrderModel.findOne({_id: paymentIntent.metadata.order_id});
+                if (!order) {
+                    return res.status(404).json({message: "Order not found"});
+                }
+                order.status = TicketStatus.FULFILLED;
+                await order.save();
+
                 console.log('PaymentIntent was successful!');
                 break;
-            case 'payment_intent.payment_failed':
+            }
+            case 'payment_intent.payment_failed': {
                 paymentIntent = event.data.object;
                 console.log('PaymentIntent failed');
                 break;
-            default:
+            }
+
+            default: {
                 // Unexpected event type
                 return res.status(400).end();
+            }
+
         }
 
         // Return a response to acknowledge receipt of the event
