@@ -13,6 +13,8 @@ import {
     createDefaultTags,
     createDefaultUser
 } from "./helper";
+
+import PaymentController from "./endpoints/Payment/PaymentController";
 // @ts-ignore
 import swaggerUi from 'swagger-ui-express';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -29,6 +31,8 @@ app.use(function (req, res, next) {
     req.header("Access-Control-Allow-Headers");
     next();
 });
+
+app.post('/webhook', express.raw({type: 'application/json'}), PaymentController.webhook);
 
 app.options('*', cors());
 app.use(express.json({limit: '50mb'}));
