@@ -22,6 +22,8 @@ import * as fs from "fs";
 import OrderController from "../Order/OrderController";
 import {OrderModel} from "../Order/OrderModel";
 
+import fetch from "node-fetch";
+
 const calculateOrderAmount = (items: IEvent[]) => {
     let sum = 0;
     for (const item of items) {
@@ -510,6 +512,9 @@ const webhook = async (req: Request, res: Response) => {
                         pass: process.env.MAILTRAP_API_KEY
                     }
                 });
+                const imageUrl = `https://api.qrserver.com/v1/create-qr-code/?data=${paymentIntent.metadata.user_id}&size=500x500&ecc=H`;
+                const resp = await fetch(imageUrl);
+                const imageBuffer = await resp.buffer(); // convert image to buffer
 
                 // send mail with defined transport object
                 const info = await transporter.sendMail({
@@ -522,6 +527,11 @@ const webhook = async (req: Request, res: Response) => {
                             filename: 'payment_receipt.pdf',
                             path: './payment_receipt.pdf',
                             contentType: 'application/pdf'
+                        },
+                        {
+                            filename: 'qrcode.png',
+                            content: imageBuffer, // attach the buffer as content
+                            contentType: 'image/png'
                         },
                     ],
                     //html: "<b>Hello world!</b>", // html body
