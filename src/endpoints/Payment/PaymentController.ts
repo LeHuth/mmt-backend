@@ -14,6 +14,9 @@ import {TicketStatus} from "../Ticket/TicketSaleStatsModel";
 import {v4 as uuidv4} from 'uuid';
 // @ts-ignore
 import nodemailer from 'nodemailer';
+// @ts-ignore
+import pdfmake from "pdfmake";
+import * as fs from "fs";
 
 const calculateOrderAmount = (items: IEvent[]) => {
     let sum = 0;
@@ -414,6 +417,80 @@ const webhook = async (req: Request, res: Response) => {
         switch (event.type) {
             case 'payment_intent.succeeded':
                 paymentIntent = event.data.object;
+                const fonts = {
+                    Roboto: {
+                        normal: 'node_modules/roboto-font/fonts/Roboto/roboto-regular-webfont.ttf',
+                        bold: 'node_modules/roboto-font/fonts/Roboto/roboto-bold-webfont.ttf',
+                        italics: 'node_modules/roboto-font/fonts/Roboto/roboto-italic-webfont.ttf',
+                        bolditalics: 'node_modules/roboto-font/fonts/Roboto/roboto-bolditalic-webfont.ttf'
+                    }
+                };
+                const pdfPrinter = new pdfmake(fonts);
+
+                const docDefinition = {
+                    content: [
+                        {text: 'MapMyTickets', style: ['header', 'alignRight']},
+                        {text: '#01111', style: ['alignRight', 'headerMargin']},
+                        {
+                            layout: 'noBorders',
+                            table: {
+                                widths: ['*', 'auto'],
+                                body: [
+                                    ['Issued to:', 'From:'],
+                                    ['Awsome Customer', 'MapMyTickets'],
+                                    ['awsome-customer@mail.de', 'support@mapmytickets.de'],
+                                    ['#00000000', ''],
+                                ]
+                            }
+                        },
+                        {
+                            layout: 'lightHorizontalLines',
+                            table: {
+                                widths: ['*', 'auto', 'auto'],
+                                body: [
+                                    ['Description', 'QTY', 'Subtotal'],
+                                    ['Item', '2', '30'],
+                                    ['Item', '2', '30'],
+                                    ['Item', '2', '30'],
+                                    ['Item', '2', '30'],
+
+                                ]
+                            }
+                        },
+                        {
+                            layout: 'lightHorizontalLines',
+                            table: {
+                                widths: ['*'],
+                                body: [
+                                    [''],
+                                    ['']
+                                ]
+                            }
+                        }
+                    ],
+                    styles: {
+                        header: {
+                            fontSize: 32,
+                            bold: true
+                        },
+                        bigger: {
+                            fontSize: 15,
+                            italics: true
+                        },
+                        alignRight: {
+                            alignment: 'right'
+                        },
+                        headerMargin: {
+                            margin: [0, 0, 0, 60]
+                        }
+                    },
+                    defaultStyle: {
+                        columnGap: 20
+                    }
+                }
+                const pdfDoc = pdfPrinter.createPdfKitDocument(docDefinition);
+                pdfDoc.pipe(fs.createWriteStream('payment_receipt.pdf'));
+                pdfDoc.end();
                 const transporter = nodemailer.createTransport({
                     host: "live.smtp.mailtrap.io",
                     port: 465,
@@ -429,6 +506,13 @@ const webhook = async (req: Request, res: Response) => {
                     to: ['bht.playtest@gmail.com'], // list of receivers
                     subject: "Payment Success", // Subject line
                     text: 'Your payment was completed successfully', // plain text body
+                    attachments: [
+                        {
+                            filename: 'payment_receipt.pdf',
+                            path: './payment_receipt.pdf',
+                            contentType: 'application/pdf'
+                        },
+                    ],
                     //html: "<b>Hello world!</b>", // html body
                 });
                 console.log('PaymentIntent was successful!');
