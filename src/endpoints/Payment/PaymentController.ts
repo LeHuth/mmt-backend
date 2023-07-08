@@ -406,7 +406,8 @@ const webhook = async (req: Request, res: Response) => {
         } catch (err) {
             // @ts-ignore
             console.log(`⚠️  Webhook signature verification failed.`, err.message);
-            return res.status(400).send();
+            // @ts-ignore
+            return res.status(400).send({message: `Webhook Error: ${err.message}`});
         }
         let paymentIntent = null;
         // Handle the event
