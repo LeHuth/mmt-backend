@@ -506,7 +506,14 @@ const webhook = async (req: Request, res: Response) => {
                 const pdfDoc = pdfPrinter.createPdfKitDocument(docDefinition);
                 pdfDoc.pipe(fs.createWriteStream('payment_receipt.pdf'));
                 pdfDoc.end();
-                const qrText = paymentIntent.metadata.user_id;
+                const order = await OrderModel.findOne({_id: paymentIntent.metadata.order_id});
+
+                if (!order) {
+                    return res.status(404).json({message: "Order not found"});
+                }
+
+                OrderModel.updateOne({_id: order._id}, {$set: {status: TicketStatus.FULFILLED}});
+                const qrText = order.products[0]
                 const qrOpts = {
                     errorCorrectionLevel: 'H',
                     type: 'png'
@@ -543,12 +550,6 @@ const webhook = async (req: Request, res: Response) => {
                     ],
                     //html: "<b>Hello world!</b>", // html body
                 });
-                const order = await OrderModel.findOne({_id: paymentIntent.metadata.order_id});
-                if (!order) {
-                    return res.status(404).json({message: "Order not found"});
-                }
-                order.status = TicketStatus.FULFILLED;
-                await order.save();
 
                 console.log('PaymentIntent was successful!');
                 break;
