@@ -33,6 +33,7 @@
     "node-fetch": "^3.3.1",
     "nodemailer": "^6.9.3",
     "pdfmake": "^0.2.7",
+    "qrcode": "^1.5.3",
     "roboto-font": "^0.1.0",
     "stripe": "^12.6.0",
     "supertest": "^6.3.3",

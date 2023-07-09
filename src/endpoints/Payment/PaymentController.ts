@@ -19,10 +19,12 @@ import nodemailer from 'nodemailer';
 // @ts-ignore
 import pdfmake from "pdfmake";
 import * as fs from "fs";
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+import QRCode from "qrcode";
 import OrderController from "../Order/OrderController";
 import {OrderModel} from "../Order/OrderModel";
 
-import fetch from "node-fetch";
 
 const calculateOrderAmount = (items: IEvent[]) => {
     let sum = 0;
@@ -504,6 +506,14 @@ const webhook = async (req: Request, res: Response) => {
                 const pdfDoc = pdfPrinter.createPdfKitDocument(docDefinition);
                 pdfDoc.pipe(fs.createWriteStream('payment_receipt.pdf'));
                 pdfDoc.end();
+                const qrText = paymentIntent.metadata.user_id;
+                const qrOpts = {
+                    errorCorrectionLevel: 'H',
+                    type: 'png'
+                };
+                const qrImageBuffer = await QRCode.toBuffer(qrText, qrOpts);  // generate QR code as Buffer
+                console.log(qrImageBuffer);
+
                 const transporter = nodemailer.createTransport({
                     host: "live.smtp.mailtrap.io",
                     port: 465,
@@ -512,9 +522,6 @@ const webhook = async (req: Request, res: Response) => {
                         pass: process.env.MAILTRAP_API_KEY
                     }
                 });
-                const imageUrl = `https://api.qrserver.com/v1/create-qr-code/?data=${paymentIntent.metadata.user_id}&size=500x500&ecc=H`;
-                const resp = await fetch(imageUrl);
-                const imageBuffer = await resp.buffer(); // convert image to buffer
 
                 // send mail with defined transport object
                 const info = await transporter.sendMail({
@@ -530,7 +537,7 @@ const webhook = async (req: Request, res: Response) => {
                         },
                         {
                             filename: 'qrcode.png',
-                            content: imageBuffer, // attach the buffer as content
+                            content: qrImageBuffer, // attach the buffer as content
                             contentType: 'image/png'
                         },
                     ],

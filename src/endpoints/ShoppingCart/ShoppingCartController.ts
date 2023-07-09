@@ -2,6 +2,7 @@ import {Request, Response} from 'express';
 import ShoppingCartModel, {IShoppingCartItem} from './ShoppingCartModel';
 import jwt from "jsonwebtoken";
 import {IJWTPayload} from "../../helper";
+import EventModel from "../Event/EventModel";
 
 export const getTokenAndDecode = async (req: Request, res: Response) => {
     const token = req.headers.authorization?.split(" ")[1];
@@ -115,8 +116,24 @@ const get = async (req: Request, res: Response) => {
     if (!shoppingCart) {
         return res.status(404).json({message: "Shopping cart not found"});
     }
+    const returnItems = [];
+    for (const cartItem in shoppingCart.items) {
+        // @ts-ignore
+        const item = cartItem as IShoppingCartItem
+        const event = await EventModel.findOne({event_id: item.event_id});
+        if (!event) {
+            return res.status(404).json({message: "Event not found"});
+        }
+        returnItems.push({
+            ...event.toObject(),
+            amount: item.amount,
+        })
+    }
 
-    return res.status(200).json({message: "Shopping cart found", shoppingCart: shoppingCart});
+    return res.status(200).json({
+        message: "Shopping cart found",
+        shoppingCart: {...shoppingCart.toObject(), returnItems: returnItems}
+    });
 }
 
 const updateItem = async (req: Request, res: Response) => {
