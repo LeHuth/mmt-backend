@@ -1,4 +1,5 @@
 import {model, Schema} from 'mongoose';
+import EventLocationModel from "../EventLocation/EventLocationModel";
 
 
 export interface IHappening {
@@ -33,7 +34,7 @@ const eventSchema = new Schema<IEvent>({
     happenings: [{
         date: {type: Date, required: true},
         time: {type: String, required: true},
-        place: {type: String, required: true}
+        place: {type: String, ref: EventLocationModel, required: true}
     }],
     tags: {type: [String], required: true},
     category: {type: String, required: true},

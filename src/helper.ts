@@ -114,6 +114,26 @@ export const createDefaultLocation = async () => {
     } else {
         console.log('Location already exists');
     }
+    if (!await EventLocationModel.findOne({name: 'Mercedes-Benz Arena'})) {
+        const address: IAddress = {
+            street: 'Mercedes-Platz',
+            houseNumber: '1',
+            city: 'Berlin',
+            zipCode: '10243',
+            country: 'Deutschland',
+        }
+        await EventLocationModel.create({
+            name: 'Mercedes-Benz Arena',
+            address: address,
+            description: 'The Mercedes-Benz Arena is a multipurpose indoor arena in the Friedrichshain neighborhood of Berlin, Germany, which opened in 2008.',
+        }).then(() => {
+            console.log('Mercedes Benz created');
+        }).catch((error) => {
+            console.error('Error creating location:', error);
+        });
+    } else {
+        console.log('Location already exists');
+    }
 }
 
 export const createDefaultTags = async () => {

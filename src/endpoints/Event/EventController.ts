@@ -1,6 +1,5 @@
 import {Request, Response} from "express";
 import EventModel from "./EventModel";
-import {Document} from "mongoose";
 import {uploadImage} from "../../helper";
 
 
@@ -71,12 +70,21 @@ const update = (req: Request, res: Response) => {
     });
 }
 
-const getAll = (req: Request, res: Response) => {
-    EventModel.find().then((data: Document[]) => {
-        return res.status(200).json(data);
-    }).catch((err) => {
-        return res.status(500).json({message: err.message});
+const getAll = async (req: Request, res: Response) => {
+    const allEvents = await EventModel.find().populate({
+        path: 'happenings.place',
+        model: 'EventLocation',
+        localField: 'happenings.place',
+        foreignField: '_id'
+    }).populate({
+        path: 'tags',
+        model: 'TagModel',
+        localField: 'tags',
+        foreignField: '_id',
+        select: '-_id'
     });
+
+    res.status(200).json(allEvents);
 }
 
 const getById = (req: Request, res: Response) => {
