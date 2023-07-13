@@ -14,6 +14,8 @@ import categories from "../categories.json";
 import {v4 as uuidv4} from 'uuid';
 import EventModel, {IHappening} from "./endpoints/Event/EventModel";
 import CategoryModel from "./endpoints/Category/CategoryModel";
+import paymentController from "./endpoints/Payment/PaymentController";
+import TicketModel from "./endpoints/Ticket/TicketModel";
 
 
 export const createDefaultAdmin = async () => {
@@ -267,6 +269,30 @@ export const createDefaultEvent = async () => {
             });
         }
     }
+}
+export const createDefaultTicket = async () => {
+    TicketModel.findOne({uuid: 'abcdefghi'}).then(async (ticket) => {
+        if (!ticket) {
+            TicketModel.create({
+                name: 'The Weekend - World Tourney',
+                uuid: 'abcdefghi',
+                event_id: 'default',
+                owner_id: 'default',
+                price: 19.99,
+                date: "19.05.2023",
+                location_id: 'default',
+                isUsed: false
+            }).then(() => {
+                console.log('Ticket created');
+            }).catch((error) => {
+                console.error('Error creating ticket:', error);
+            });
+        } else {
+            console.log('Ticket already exists');
+        }
+    }).catch((error) => {
+        console.error('Error creating ticket:', error);
+    });
 }
 const setupGoogleStorageConnection = (): Bucket => {
     try {

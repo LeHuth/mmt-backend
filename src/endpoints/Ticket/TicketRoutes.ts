@@ -15,5 +15,7 @@ router.post("/get/review-ready", TicketController.getReviewReady);
 //delete ticket
 router.delete("/delete/:id", TicketController.deleteById);
 
+//validate ticket
+router.post("/validate/:uuid", TicketController.validate);
 
 export default router;

@@ -11,7 +11,8 @@ import {
     createDefaultLocation,
     createDefaultOrganizer,
     createDefaultTags,
-    createDefaultUser
+    createDefaultUser,
+    createDefaultTicket
 } from "./helper";
 
 import PaymentController from "./endpoints/Payment/PaymentController";
@@ -60,6 +61,7 @@ async function connectToMongo() {
         await createDefaultTags();
         await createDefaultCategories();
         await createDefaultEvent();
+        await createDefaultTicket();
 
     } catch (error) {
         console.error('Error connecting to MongoDB:', error);
