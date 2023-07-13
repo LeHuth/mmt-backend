@@ -552,7 +552,7 @@ const webhook = async (req: Request, res: Response) => {
                 });
 
                 console.log('PaymentIntent was successful!');
-                await ShoppingCartModel.findOneAndUpdate({user_id: paymentIntent.user_id}, {$set: {items: []}});
+                await ShoppingCartModel.findOneAndUpdate({user_id: paymentIntent.metadata.user_id}, {$set: {items: []}});
                 break;
             }
             case 'payment_intent.payment_failed': {
