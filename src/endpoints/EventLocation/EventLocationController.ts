@@ -1,9 +1,12 @@
 import {Request, Response} from 'express';
 import EventLocationModel from './EventLocationModel';
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+import {v4 as uuidv4} from 'uuid';
 
 const create = async (req: Request, res: Response) => {
     try {
-        let eventLocation = new EventLocationModel(req.body);
+        let eventLocation = new EventLocationModel({_id: uuidv4(), ...req.body});
         eventLocation = await eventLocation.save();
         return res.status(201).json(eventLocation);
     } catch (err) {

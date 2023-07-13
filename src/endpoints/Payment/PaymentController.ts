@@ -512,7 +512,7 @@ const webhook = async (req: Request, res: Response) => {
                     return res.status(404).json({message: "Order not found"});
                 }
 
-                OrderModel.updateOne({_id: order._id}, {$set: {status: TicketStatus.FULFILLED}});
+                await OrderModel.findOneAndUpdate({_id: order._id}, {$set: {status: TicketStatus.FULFILLED}});
                 const qrText = order.products[0]
                 const qrOpts = {
                     errorCorrectionLevel: 'H',
@@ -552,6 +552,7 @@ const webhook = async (req: Request, res: Response) => {
                 });
 
                 console.log('PaymentIntent was successful!');
+                await ShoppingCartModel.findOneAndUpdate({user: paymentIntent.user_id}, {$set: {items: []}});
                 break;
             }
             case 'payment_intent.payment_failed': {

@@ -2,6 +2,7 @@ import ReviewModel from "./ReviewModel";
 import {Request, Response} from "express";
 import {extractUserIdFromToken} from "../../helper";
 import UserModel from "../User/UserModel";
+import TicketModel from "../Ticket/TicketModel";
 
 
 export const getReviews = async (req: Request, res: Response) => {
@@ -50,6 +51,7 @@ export const createReview = async (req: Request, res: Response) => {
             if (err) return res.status(401).json({message: err.message});
             req.body.user_id = userId;
             const review = await ReviewModel.create(req.body);
+            await TicketModel.findOneAndUpdate({_id: req.body.ticket_id}, {reviewed: true})
             res.status(201).json({value: review});
         });
 

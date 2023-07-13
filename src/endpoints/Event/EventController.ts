@@ -81,18 +81,40 @@ const getAll = async (req: Request, res: Response) => {
         model: 'TagModel',
         localField: 'tags',
         foreignField: '_id',
-        select: '-_id'
+    }).populate({
+        path: 'category',
+        model: 'Category',
+        localField: 'category',
+        foreignField: '_id',
     });
 
     res.status(200).json(allEvents);
 }
 
-const getById = (req: Request, res: Response) => {
-    EventModel.findById(req.params.id).then((data) => {
+const getById = async (req: Request, res: Response) => {
+    const event = await EventModel.findById(req.params.id).populate({
+        path: 'happenings.place',
+        model: 'EventLocation',
+        localField: 'happenings.place',
+        foreignField: '_id'
+    }).populate({
+        path: 'tags',
+        model: 'TagModel',
+        localField: 'tags',
+        foreignField: '_id',
+    }).populate({
+        path: 'category',
+        model: 'Category',
+        localField: 'category',
+        foreignField: '_id',
+    });
+
+    res.status(200).json(event);
+    /*EventModel.findById(req.params.id).then((data) => {
         return res.status(200).json(data);
     }).catch((err) => {
         return res.status(500).json({message: err.message});
-    });
+    });*/
 }
 
 const deleteById = (req: Request, res: Response) => {

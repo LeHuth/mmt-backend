@@ -1,5 +1,8 @@
 import {model, Schema} from 'mongoose';
 import EventLocationModel from "../EventLocation/EventLocationModel";
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+import {v4 as uuidv4} from 'uuid';
 
 
 export interface IHappening {
@@ -43,6 +46,11 @@ const eventSchema = new Schema<IEvent>({
     price: {type: Number, required: true},
     available: {type: Number, required: true}
 })
+
+eventSchema.pre("save", function (next) {
+    this._id = uuidv4();
+    next();
+});
 
 
 const EventModel = model<IEvent>("EventModel", eventSchema)

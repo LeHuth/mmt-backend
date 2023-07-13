@@ -16,6 +16,7 @@ export interface ITicket {
     isUsed: boolean;
     validatedAt?: string;
     status: TICKET_STATUS;
+    reviewed?: boolean;
 }
 
 const ticketSchema = new Schema<ITicket>({
@@ -29,7 +30,8 @@ const ticketSchema = new Schema<ITicket>({
     location_id: {type: String, required: true},
     isUsed: {type: Boolean, required: true, default: false},
     status: {type: String, required: true, default: "pending"},
-    validatedAt: { type: String, required: false },
+    validatedAt: {type: String, required: false},
+    reviewed: {type: Boolean, required: false, default: false}
 })
 
 const TicketModel = model<ITicket>("TicketModel", ticketSchema)
