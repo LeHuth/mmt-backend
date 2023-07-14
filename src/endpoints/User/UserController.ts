@@ -69,7 +69,7 @@ const registration = async (req: Request, res: Response) => {
         })
             .then(async (user) => {
                 //const token = jwt.sign(payload, process.env.JWT_SECRET, {expiresIn: '1h'});
-                const token = jwt.sign({userId: user._id}, process.env.JWT_SECRET as string, {expiresIn: '15m'});
+                const token = jwt.sign({userId: user._id}, process.env.JWT_SECRET as string, {expiresIn: '2h'});
 
                 const transporter = nodemailer.createTransport({
                     host: "live.smtp.mailtrap.io",
